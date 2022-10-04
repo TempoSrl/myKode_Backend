@@ -128,7 +128,7 @@ BusinessLogic invocherà le stored procedure con le seguenti convenzioni:
  dell'operazione a cui si applica la stored (Insert/Update/Delete), e pre/post vanno usate a seconda che la regola sia 
  "pre" o "post" (vedasi flowchart) 
 
-2) la stored procedure avrà i parametri indcati dalla tabella auditparameter di cui in seguito
+2) la stored procedure avrà i parametri indicati dalla tabella auditparameter di cui in seguito
 
 3) la stored procedure restituirà un tipo intero o varchar a seconda di quanti controlli sono presenti in essa:
 

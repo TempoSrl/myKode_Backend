@@ -42,14 +42,14 @@ Stabilisce se una riga è valida o meno. Si intende contenere delle verifiche sem
  senza uso di web services, altrimenti potrebbe essere meglio implementato come logica di Business.
 
 Restituisce un Deferred a un oggetto così strutturato:
-
-        {  
-           {string} warningMsg,  //messaggio di avviso se trattasi di messaggio ignorabile
-           {string} errMsg,      //messaggio di errore se trattasi di messaggio non ignorabile
-           {string} errField,    //campo che ha generato il problema 
-           {object} row          //riga che ha generato il problema
-        }
-
+```js
+{  
+    {string} warningMsg,  //messaggio di avviso se trattasi di messaggio ignorabile
+    {string} errMsg,      //messaggio di errore se trattasi di messaggio non ignorabile
+    {string} errField,    //campo che ha generato il problema 
+    {object} row          //riga che ha generato il problema
+}
+```
 lato client, ove vi sia un messaggio ignorabile, di solito è mostrato per conferma. I messaggi non ignorabili invece
  determinano implicitamente una condizione di non validità.
 Lato server è possibile inserire un'invocazione del metodo isValid ma di solito questa è effettuata sul client. 
@@ -74,38 +74,38 @@ La classe base (MetaData) di suo si occupa d'impostare i default sulle colonne o
 
 
 Volendo impostare ad esempio la colonna idorder come autoincremento, il metodo potrebbe essere ridefinito come:
-
-            getNewRow: function (parentRow, dt, editType){ 
-				dt.autoIncrement('idorder', { });	
-				return this.superClass.getNewRow(parentRow, dt, editType);
-			}
-
+```js
+    getNewRow: function (parentRow, dt, editType){ 
+        dt.autoIncrement('idorder', { });	
+        return this.superClass.getNewRow(parentRow, dt, editType);
+    }
+```
 Volendo invece avere anche una colonna nOrder che parte da 1 ogni anno (yOrder) potremmo avere:
-
-            getNewRow: function (parentRow, dt, editType){ 
-				dt.autoIncrement('idorder', { });
-                dt.autoIncrement('nOrder', {selector:['yOrder']});
-				return this.superClass.getNewRow(parentRow, dt, editType);
-			}
-
+```js
+    getNewRow: function (parentRow, dt, editType){ 
+        dt.autoIncrement('idorder', { });
+        dt.autoIncrement('nOrder', {selector:['yOrder']});
+        return this.superClass.getNewRow(parentRow, dt, editType);
+    }
+```
 Se poi volessimo far variare la numerazione in base al campo "tipo ordine", idOrderKind, avremmo:
-
-            getNewRow: function (parentRow, dt, editType){ 
-				dt.autoIncrement('idorder', { });
-                dt.autoIncrement('nOrder', {selector:['yOrder','idOrderKind']});
-				return this.superClass.getNewRow(parentRow, dt, editType);
-			}
-
+```js
+    getNewRow: function (parentRow, dt, editType){ 
+        dt.autoIncrement('idorder', { });
+        dt.autoIncrement('nOrder', {selector:['yOrder','idOrderKind']});
+        return this.superClass.getNewRow(parentRow, dt, editType);
+    }
+```
 Se volessimo inserire un certo numero di ordini nella stessa transazione e volessimo essere sicuri che la numerazione
  ottenuta nel salvataggio non andrà mai in conflitto con quella nelle righe ancora da inserire potremmo impostare
  un valore minimo per i valori temporanei (in memoria):
-
-           getNewRow: function (parentRow, dt, editType){
-            dt.autoIncrement('idorder', { });
-            dt.autoIncrement('nOrder', {minimum:99990001, selector:['yOrder','idOrderKind']});
-            return this.superClass.getNewRow(parentRow, dt, editType);
-           }
-
+ ```js
+    getNewRow: function (parentRow, dt, editType){
+        dt.autoIncrement('idorder', { });
+        dt.autoIncrement('nOrder', {minimum:99990001, selector:['yOrder','idOrderKind']});
+        return this.superClass.getNewRow(parentRow, dt, editType);
+    }
+```
 Questo accorgimento non è mai necessario se si inserisce una riga alla volta nella stessa tabella. Viceversa,
  i valori effettivi ottenuti in fase di salvataggio potrebbero andare in conflitto con i valori temporanei delle altre
  righe nel dataset ancora non inviate al database.

@@ -75,7 +75,7 @@ E' anche possibile un uso più avanzato, e documentato negli unit test, della cla
  annidato.
 Può essere utile se uno dei due DataSet da salvare non è disponibile inizialmente ma si può calcolare solo 
  dopo aver scritto i dati del primo sul DataBase (ma prima di aver effettuato il commit della transazione).
-Con la modalità annidata, è la classe PostData esterna apre e chiude la transazione, e la classe PostData
+Con la modalità annidata, è la classe PostData esterna che apre e chiude la transazione, e la classe PostData
  "interna" salva i dati e restituisce dei messaggi che sono uniti a quelli della classe esterna.
 
 Il metodo usato a tale scopo è setInnerPosting, da chiamarsi sulla classe esterna, che prevede due parametri:

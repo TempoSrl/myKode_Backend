@@ -79,10 +79,10 @@ MaxCacher.prototype.getHash = function(table, column,filter,expr){
  *   be done.
  * @method getMax
  * @param {ObjectRow} r objectRow for which evaluate the max
- * @param {string} column  column to evaluate
- * @param {string[]} selectors //selector fields for the calculation
- * @param {sqlFun} filter //filter to apply
- * @param {sqlFun} expr //expression to evaluate
+ * @param {string} column column to evaluate
+ * @param {string[]} selectors selector fields for the calculation
+ * @param {sqlFun} filter filter to apply
+ * @param {sqlFun} expr expression to evaluate
  * @return {Promise<int>}
  */
 MaxCacher.prototype.getMax = function (r, column, selectors, filter, expr) {

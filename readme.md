@@ -53,13 +53,14 @@ Volendo dare accesso ad altre cartelle alle richieste prive di un token valido s
 Anche le richieste non autenticate devono fornire un token fittizio, "anonimo", basterà aggiungere alla struttura 
 restituita altri nomi di cartella, esempio:
 
-
+```js
     getNoTokenFolders: function(){
         return {
             "auth":true,
             "public": true
          };
     }
+```
 
 Per quanto detto nell'header http di ogni richiesta del client dovrà esserci in ogni caso una riga del tipo
 
@@ -171,7 +172,7 @@ Es.
 ```
 
 ### Creazione semi manuale di un DataSet
-E' possibile istanziare un DataSet e poi aggiungervi le tabelle create invocando il metodo table() di un 
+E' possibile istanziare un DataSet e poi aggiungervi le tabelle create invocando il metodo addTable() di un 
  [DbDescriptor](jsDbList.md). In questo modo la tabella avrà automaticamente le colonne e la chiave primaria impostata.
 
 A questo punto basta aggiungere le relazioni desiderate e la creazione è finita:

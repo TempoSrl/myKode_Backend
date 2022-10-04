@@ -131,7 +131,7 @@ Descrittore di colonna. Ha i seguenti campi:
 Metodi per leggere / scrivere / eliminare / verificare la presenza delle informazioni di accesso a un database (DbInfo)
 
 DbInfo è una struttura del tipo:
-
+```js
     {
      server: "nome server",
      useTrustedConnection: true/false, id true user/pwd are not used
@@ -139,8 +139,8 @@ DbInfo è una struttura del tipo:
      pwd: "password to connect to db",
      database: "data base name",
      sqlModule: 'jsMySqlDriver' or 'jsSqlServerDriver'
-    };
-
+    }
+```
 ed è necessaria al modulo jsDbList per sapere come costruire connessioni (Connection).
 
 
