@@ -69,6 +69,9 @@
              */
             setLanguage: function (lan){
                 this.localResource = localResource.prototype.getLocalResource(lan);
+                if (this.superClass) {
+                    this.superClass.setLanguage(lan);
+                }
             },
 
             /**
