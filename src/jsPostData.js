@@ -163,6 +163,26 @@ SinglePostData.prototype = {
 };
 
 
+
+/**
+ *
+ * @param {DataAccess} conn
+ * @param {BusinessLogicResult} result
+ * @returns {boolean|*}
+ */
+SinglePostData.prototype.doUpdate= function (conn, result){
+  if (!this.updateDelegate) return Deferred().resolve(true);
+  try {
+    return this.updateDelegate(conn, this.ds, result);
+  }
+  catch (e) {
+    result.addError(e.toString(), true);
+    return Deferred().resolve(false);
+  }
+
+};
+
+
 /**
  * This function  is called before and after applying changes to db.
  *  The first time is called with post=false and the second time with post=true.
@@ -172,9 +192,11 @@ SinglePostData.prototype = {
  *  This is meant to be replaced or overridden in derived classes
  * @param {DataSet} ds
  * @param {Context} context
+ * @param {function (conn, d, result)} [updateDelegate]
  * @return {Promise<SinglePostData>}
  */
-SinglePostData.prototype.init = function ( ds,context){
+SinglePostData.prototype.init = function ( ds,context, updateDelegate){
+  this.updateDelegate = updateDelegate;
   this.ds = ds;
   this.rowChanges = this.getChanges(ds);
   this.conn= context.dataAccess;
@@ -225,7 +247,7 @@ SinglePostData.prototype.sortTables = function(d, checkFunction){
 
 
 /**
- * Adds all Rows (of every Tables referred by "Tables")with a specified State to result
+ * Adds all Rows (of every table in "tables") with a specified state to result
  * @param {DataTable[]} tables
  * @param {DataRowState} state
  * @return {ObjectRow[]}
@@ -735,9 +757,10 @@ PostData.prototype.createBusinessLogicResult = function (){
  *
  * @param {DataSet} ds
  * @param {Context} context
+ * @param {function (conn, d, result)} [updateDelegate]
  * @return {Promise<SinglePostData>}
  */
-PostData.prototype.init = function ( ds,context){
+PostData.prototype.init = function ( ds,context, updateDelegate){
   if (!this.conn){
     this.conn = context.dataAccess;
   }
@@ -745,7 +768,7 @@ PostData.prototype.init = function ( ds,context){
   this.allPost.push(p);
   this.context = context;
 
-  return  p.init(ds, context)
+  return  p.init(ds, context, updateDelegate)
       .then(()=> this.getBusinessLogic(context, p.rowChanges))
       .then(bl=> {
         p.businessLogic = bl;
@@ -1081,9 +1104,9 @@ PostData.prototype.doAllLog = function (conn){
  * @returns {Promise} promise fails on errors
  */
 PostData.prototype.doAllUpdate = function (conn, result){
+  let that = this;
   let allUpdateFn = _.map(this.allPost, (p)=> ()=>p.doUpdate(conn, result));
-  return promiseWaterfall(allUpdateFn).
-    then(()=>result);
+  return promiseWaterfall(allUpdateFn).then(()=>result);
 };
 
 /**

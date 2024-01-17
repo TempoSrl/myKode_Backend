@@ -325,6 +325,29 @@
         }
     };
 
+    utils.deferredToAsync= function(deferred) {
+        return async function () {
+            return deferred.promise();
+        };
+    };
+
+    utils.asyncToDeferred = function(asyncFn) {
+        return function () {
+            const deferred = Deferred();
+
+            // Esegui la funzione asincrona fornita come argomento
+            asyncFn()
+            .then((result) => {
+                deferred.resolve(result);
+            })
+            .catch((error) => {
+                deferred.reject(error);
+            });
+
+            return deferred.promise();
+        };
+    }
+
     /**
      * Returns true if "str" is a valid url
      * @param {string} str

@@ -235,9 +235,6 @@ delete from menu
 GO
 
 
-delete from flowchartuser
-GO
-
 
 
 -- FINE GENERAZIONE SCRIPT --
@@ -292,6 +289,101 @@ variablename varchar(50) NOT NULL,
 END
 GO
 
+
+
+if exists (select * from dbo.sysobjects where id = object_id(N'[compute_allowform]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+drop procedure [compute_allowform]
+GO
+
+CREATE PROCEDURE [compute_allowform]
+(
+	@ayear int,
+	@iduser varchar(10),
+	@idflowchart varchar(34),
+	@varname varchar(30)=null
+)
+AS BEGIN
+
+CREATE TABLE #outtable
+(
+	tablename varchar(100)
+)
+
+IF (@idflowchart IS NULL)
+BEGIN
+	INSERT INTO #outtable
+	SELECT  metadata
+	FROM menu
+	WHERE metadata IS NOT NULL
+
+	SELECT tablename FROM #outtable where tablename <>'no_table'
+	drop table #outtable
+
+	RETURN
+END
+
+INSERT INTO #outtable VALUES('resultparameter')
+INSERT INTO #outtable VALUES('export')
+
+
+IF ((SELECT COUNT(*) FROM #outtable) > 0)
+BEGIN
+	SELECT distinct tablename FROM #outtable where tablename <>'no_table' order by tablename
+	drop table #outtable
+	RETURN
+END
+
+INSERT INTO #outtable VALUES('dummy')
+SELECT DISTINCT tablename FROM #outtable order by tablename
+drop table #outtable
+END
+
+GO
+
+
+
+if exists (select * from dbo.sysobjects where id = object_id(N'[compute_notable]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
+drop procedure [compute_notable]
+GO
+
+CREATE PROCEDURE compute_notable
+(
+	@ayear int,
+	@iduser varchar(10),
+	@idflowchart varchar(34),
+	@varname varchar(30)
+)
+AS BEGIN
+
+CREATE TABLE #outtable
+(
+	edittype varchar(100)
+)
+
+IF (@idflowchart IS NULL)
+BEGIN
+	INSERT INTO #outtable
+	SELECT DISTINCT edittype
+	FROM menu
+	WHERE metadata = 'no_table'
+
+	SELECT edittype FROM #outtable
+	RETURN
+END
+
+
+IF ((SELECT COUNT(*) FROM #outtable) > 0)
+BEGIN
+	SELECT distinct edittype FROM #outtable order by edittype
+	RETURN
+END
+
+INSERT INTO #outtable VALUES('dummy')
+SELECT edittype FROM #outtable order by edittype
+drop table #outtable
+
+END
+GO
 
 
 if exists (select * from dbo.sysobjects where id = object_id(N'[compute_environment]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
@@ -439,99 +531,8 @@ INSERT  #tab_allowform EXEC compute_allowform @ayear,@idcustomuser,@idflowchart,
 END
 GO
 
-if exists (select * from dbo.sysobjects where id = object_id(N'[compute_allowform]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
-drop procedure [compute_allowform]
-GO
-
-CREATE PROCEDURE [compute_allowform]
-(
-	@ayear int,
-	@iduser varchar(10),
-	@idflowchart varchar(34),
-	@varname varchar(30)=null
-)
-AS BEGIN
-
-CREATE TABLE #outtable
-(
-	tablename varchar(100)
-)
-
-IF (@idflowchart IS NULL)
-BEGIN
-	INSERT INTO #outtable
-	SELECT  metadata
-	FROM menu
-	WHERE metadata IS NOT NULL
-
-	SELECT tablename FROM #outtable where tablename <>'no_table'
-	drop table #outtable
-
-	RETURN
-END
-
-INSERT INTO #outtable VALUES('resultparameter')
-INSERT INTO #outtable VALUES('export')
 
 
-IF ((SELECT COUNT(*) FROM #outtable) > 0)
-BEGIN
-	SELECT distinct tablename FROM #outtable where tablename <>'no_table' order by tablename
-	drop table #outtable
-	RETURN
-END
-
-INSERT INTO #outtable VALUES('dummy')
-SELECT DISTINCT tablename FROM #outtable order by tablename
-drop table #outtable
-END
-
-GO
-
-
-
-if exists (select * from dbo.sysobjects where id = object_id(N'[compute_notable]') and OBJECTPROPERTY(id, N'IsProcedure') = 1)
-drop procedure [compute_notable]
-GO
-
-CREATE PROCEDURE compute_notable
-(
-	@ayear int,
-	@iduser varchar(10),
-	@idflowchart varchar(34),
-	@varname varchar(30)
-)
-AS BEGIN
-
-CREATE TABLE #outtable
-(
-	edittype varchar(100)
-)
-
-IF (@idflowchart IS NULL)
-BEGIN
-	INSERT INTO #outtable
-	SELECT DISTINCT edittype
-	FROM menu
-	WHERE metadata = 'no_table'
-
-	SELECT edittype FROM #outtable
-	RETURN
-END
-
-
-IF ((SELECT COUNT(*) FROM #outtable) > 0)
-BEGIN
-	SELECT distinct edittype FROM #outtable order by edittype
-	RETURN
-END
-
-INSERT INTO #outtable VALUES('dummy')
-SELECT edittype FROM #outtable order by edittype
-drop table #outtable
-
-END
-GO
 
 
 

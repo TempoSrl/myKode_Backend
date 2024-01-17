@@ -495,7 +495,7 @@ describe('javascript core test',
                     });
 
                 it("async function return thenable",
-                    function(done) {
+                    async function(done) {
                         jasmine.clock().uninstall();
                         let dd = $.Deferred();
                         let res=0;
@@ -523,6 +523,7 @@ describe('javascript core test',
                             let exc;
                             try {
                                 res= await dd;
+                                res=5;
                             }
                             catch (e) {
                                 exc=e;

@@ -17,7 +17,6 @@ const Deferred = require("JQDeferred");
 const _ = require('lodash');
 const multiSelect = require('./jsMultiSelect');
 const async = require('async');
-const {type} = require("JQDeferred/lib/jquery");
 
 /**
  * @private

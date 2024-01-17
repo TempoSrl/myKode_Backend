@@ -156,6 +156,8 @@ function Connection(options) {
     this.opt = _.clone(options);
     this.sqlCompiler = this.opt.sqlCompiler || 'db';
     this.edgeConnection = null;
+    this.driverName = "Oracle";
+
     /**
      * Indicates the open/closed state of the underlying connection
      * @property isOpen
@@ -263,12 +265,15 @@ Connection.prototype.clone = function () {
     return new Connection({connectionString: this.connectionString});
 };
 
+const lowerCaseKeywords = ["start", "audit", "size"];
 /* tables and columns name must be quoted otherwise they are converted to uppercase */
 function quoteStringIfLowerCase(str){
     if (typeof str !== "string")  {
         return str;
     }
-    if (/[a-z]/.test(str)){
+
+
+    if (/[a-z]/.test(str)|| lowerCaseKeywords.includes(str.toLowerCase())){
         //has lower cases
         return "\""+str.trim()+"\"";
     }
@@ -703,7 +708,7 @@ Connection.prototype.getSqlCallSPWithNamedParams  = function(options){
             ).join(',') + ' FROM DUAL CONNECT BY level <= 1; ';
         cmd += 'DBMS_SQL.RETURN_RESULT(c1); '; //Returning the param/s returned
     }
-    cmd += 'END;'
+    cmd += 'END;';
     return cmd;
 };
 
@@ -871,7 +876,7 @@ Connection.prototype.tableDescriptor = function (tableName) {
 
 /**
  * get a sql command given by a sequence of specified sql commands
- * N.B.: only adds the new line character in Oracle, the semi-colon is expected after every command
+ * N.B.: only adds the new line character in Oracle, the semicolon is expected after every command
  * @method appendCommands
  * @param {string[]} cmd
  * @returns {string}

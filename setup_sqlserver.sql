@@ -1,7 +1,6 @@
---setuser 'amministrazione'
-SET NOCOUNT ON
+/*   SETUP DATA DEMO */
 
---[DBO]--
+SET NOCOUNT ON
 GO
 
 -- CREAZIONE TABELLA web_listredir --

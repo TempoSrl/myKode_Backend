@@ -148,6 +148,7 @@ function Connection(options) {
     this.opt = _.clone(options);
     this.sqlCompiler = this.opt.sqlCompiler || 'db';
     this.edgeConnection = null;
+    this.driverName = "SqlServer";
     /**
      * Indicates the open/closed state of the underlying connection
      * @property isOpen
@@ -985,7 +986,7 @@ Connection.prototype.getPagedTableCommand = function(options) {
 
 /**
  * Type of value depends on nbits
- * @param {object} value
+ * @param {int|string} value
  * @param {int} nbits
  * return {string}
  */

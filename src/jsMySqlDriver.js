@@ -137,6 +137,7 @@ function Connection(options) {
      * @type {object}
      */
     this.opt = _.clone(options);
+    this.driverName = "MySql";
 
     ////DBO is the default used for trusted connections
     this.defaultSchema = this.opt.defaultSchema || this.opt.user || 'DBO';

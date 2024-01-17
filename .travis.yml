@@ -1,4 +1,12 @@
-language: node_js
+image:
+  - Visual Studio 2015
+  - Ubuntu2004
+
+language:
+    - node_js
+    - csharp
+
+mono: none
 
 os:
   - linux
