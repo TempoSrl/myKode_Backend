@@ -31,6 +31,19 @@ const mapIsolationLevels = {
     'SERIALIZABLE': 'SERIALIZABLE'
 };
 
+const codedTypes ={
+    'a':'DATE',
+    'b':'CHAR(1)',
+    'i':'NUMBER',
+    'c':'VARCHAR2(255)',
+    'n':'NUMBER(19,6)',
+    'f':'FLOAT',
+    'd':'DATE',
+    'v':'NUMBER(23,2)',
+    'default':'VARCHAR2(255)'
+};
+
+
 // https://learn.microsoft.com/en-us/dotnet/framework/data/adonet/oracle-data-type-mappings
 const mapping = {
     'CHAR':CType.String,
@@ -267,7 +280,7 @@ Connection.prototype.clone = function () {
 
 const lowerCaseKeywords = ["start", "audit", "size"];
 /* tables and columns name must be quoted otherwise they are converted to uppercase */
-function quoteStringIfLowerCase(str){
+function quoteStringIfNecessary(str){
     if (typeof str !== "string")  {
         return str;
     }
@@ -284,7 +297,7 @@ function quoteColumnList(col){
     if (typeof col !== "string")  {
         return col;
     }
-    return col.split(",").map(s=>quoteStringIfLowerCase(s)).join();
+    return col.split(",").map(s=>quoteStringIfNecessary(s)).join();
 }
 
 function quoteOrderBy(col){
@@ -293,14 +306,14 @@ function quoteOrderBy(col){
     }
     return col.split(",").map(s=>{
         let ss = s.split(' ');
-        ss[0]= quoteStringIfLowerCase(ss[0]);
+        ss[0]= quoteStringIfNecessary(ss[0]);
         return ss.join(' ');
         }
         ).join();
 }
 
 function quoteArrayIfLowerCase(arr){
-    return arr.map(s=>quoteStringIfLowerCase(s));
+    return arr.map(s=>quoteStringIfNecessary(s));
 }
 
 /**
@@ -541,7 +554,7 @@ Connection.prototype.rollBack = function () {
  */
 Connection.prototype.getSelectCommand = function (options) {
     let selCmd = 'OPEN internalCur FOR ' +
-        'SELECT ' + quoteColumnList(options.columns) + ' FROM ' + quoteStringIfLowerCase(options.tableName);
+        'SELECT ' + quoteColumnList(options.columns) + ' FROM ' + quoteStringIfNecessary(options.tableName);
     if (options.filter && !options.filter.isTrue) {
         selCmd += " WHERE " + formatter.conditionToSql(options.filter, options.environment);
     }
@@ -598,7 +611,7 @@ Connection.prototype.updateBatch = function (query,timeout) {
  * @returns {string}
  */
 Connection.prototype.getDeleteCommand = function (options) {
-    let cmd = 'DELETE FROM ' + quoteStringIfLowerCase(options.tableName);
+    let cmd = 'DELETE FROM ' + quoteStringIfNecessary(options.tableName);
     if (options.filter) {
         cmd += ' WHERE ' + formatter.toSql(options.filter, options.environment);
     } else {
@@ -997,15 +1010,15 @@ Connection.prototype.namedParameterSupported = function(){
  */
 Connection.prototype.variableNameForNBits = function(num,nbits){
     if (nbits <= 14) {
-        return "@s"+num;
+        return "s"+num;
     }
     if (nbits <= 30) {
-        return "@i"+num;
+        return "i"+num;
     }
     if (nbits <= 62) {
-        return "@b"+num;
+        return "b"+num;
     }
-    return "@c"+num;
+    return "c"+num;
 };
 
 
@@ -1058,9 +1071,9 @@ Connection.prototype.getSelectListOfVariables = function(vars) {
     if (vars.length===0){
         return  null;
     }
-    let selCmd = " OPEN internalCur FOR SELECT "
-    selCmd += vars.map(c=>c.varName+" AS "+quoteStringIfLowerCase(c.colName)).join(", ");
-    selCmd += ' FROM DUAL; '
+    let selCmd = " OPEN internalCur FOR SELECT ";
+    selCmd += vars.map(c=>c.varName+" AS "+quoteStringIfNecessary(c.colName)).join(", ");
+    selCmd += ' FROM DUAL; ';
 
     selCmd += 'DBMS_SQL.RETURN_RESULT(internalCur);';
 
@@ -1089,7 +1102,7 @@ Connection.prototype.getPagedTableCommand = function(options) {
     if (options.filter){
         internalWhere = " WHERE "+formatter.conditionToSql(options.filter, options.environment);
     }
-    let tabName = quoteStringIfLowerCase(options.tableName);
+    let tabName = quoteStringIfNecessary(options.tableName);
     let cols = quoteColumnList(options.columns);
     return `OPEN internalCur FOR SELECT * FROM (
                 SELECT 
@@ -1162,10 +1175,12 @@ Connection.prototype.run = function(script,timeout){
 };
 
 Connection.prototype.mapping= mapping;
+Connection.prototype.codedTypes= codedTypes;
 
 module.exports = {
     Connection: Connection,
     cType: CType,
+    codedTypes:codedTypes,
     IsolationLevels:mapIsolationLevels,
     objectify:objectify,
     SqlParameter:SqlParameter

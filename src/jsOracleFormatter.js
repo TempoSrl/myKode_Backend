@@ -1,6 +1,7 @@
 /*global Environment,global,define,sqlFun */
 /*jslint nomen: true*/
 const _ = require('lodash');
+const Parser = require("./jsStringParser");
 
 
 /**
@@ -151,12 +152,18 @@ const _ = require('lodash');
          * Surround expression in parenthesis
          * @method doPar
          * @public
-         * @param {string} expr
+         * @param {string|null} expr
          * @returns {string}
          */
         function doPar(expr) {
+            if (expr === null) return expr;
+            if (expr === '') return  expr;
+            if (Parser.isABlock(expr)){
+                return  expr;
+            }
             return "(" + expr + ")";
         }
+
         $sqlf.doPar = doPar;
 
         /**

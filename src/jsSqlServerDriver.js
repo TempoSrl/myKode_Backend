@@ -30,6 +30,18 @@ const mapIsolationLevels = {
     'SERIALIZABLE': 'SERIALIZABLE'
 };
 
+const codedTypes ={
+    'a':'date',
+    'b':'char(1)',
+    'i':'int',
+    'c':'varchar(255)',
+    'n':'decimal(19,6)',
+    'f':'real',
+    'd':'datetime',
+    'v':'decimal(23,2)',
+    'default':'varchar(255)'
+};
+
 const mapping = {
     'CHAR':CType.Char,
     'VARCHAR':CType.String,
@@ -43,8 +55,6 @@ const mapping = {
     'BINARY':CType.byteArray,
     'VARBINARY':CType.byteArray,
     'IMAGE':CType.byteArray,
-
-
 
     'BIT':CType.int,
     'TINYINT':CType.Byte,
@@ -60,8 +70,6 @@ const mapping = {
     'MONEY':CType.Decimal,
     'DECIMAL':CType.Decimal,
     'REAL':CType.Single,
-
-
 
     'DATE':CType.date,
     'DATETIME2':CType.DateTime,
@@ -248,6 +256,47 @@ Connection.prototype.destroy = function () {
 Connection.prototype.clone = function () {
     return new Connection({connectionString: this.connectionString});
 };
+
+
+const lowerCaseKeywords = [];
+/* tables and columns name must be quoted otherwise they are converted to uppercase */
+function quoteStringIfNecessary(str){
+    if (typeof str !== "string")  {
+        return str;
+    }
+
+
+    if (/[a-z]/.test(str)|| lowerCaseKeywords.includes(str.toLowerCase())){
+        //has lower cases
+        return "["+str.trim()+"]";
+    }
+    return str.trim();
+}
+
+
+function quoteColumnList(col){
+    if (typeof col !== "string")  {
+        return col;
+    }
+    return col.split(",").map(s=>quoteStringIfNecessary(s)).join();
+}
+
+function quoteOrderBy(col){
+    if (typeof col !== "string")  {
+        return col;
+    }
+    return col.split(",").map(s=>{
+            let ss = s.split(' ');
+            ss[0]= quoteStringIfNecessary(ss[0]);
+            return ss.join(' ');
+        }
+    ).join();
+}
+
+function quoteArrayIfLowerCase(arr){
+    return arr.map(s=>quoteStringIfNecessary(s));
+}
+
 
 /**
  * Sets the Transaction isolation level for current connection
@@ -679,7 +728,7 @@ Connection.prototype.callSPWithNamedParams = function (options) {
 
 /**
  * Transforms raw data into plain objects
- * This must be the same as the objectify existing in jsDataAccess
+ * This must be the same as the objectify function existing in jsDataAccess
  * @method objectify
  * @param {Array} colNames
  * @param {Array} rows
@@ -1031,10 +1080,12 @@ Connection.prototype.run = function(script,timeout){
 };
 
 Connection.prototype.mapping= mapping;
+Connection.prototype.codedTypes= codedTypes;
 
 module.exports = {
     Connection: Connection,
     cType: CType,
+    codedTypes:codedTypes,
     IsolationLevels:mapIsolationLevels,
     objectify:objectify,
     SqlParameter:SqlParameter

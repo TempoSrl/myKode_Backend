@@ -2,6 +2,7 @@
 /*jslint nomen: true*/
 const _ = require('lodash');
 
+const Parser = require('jsStringParser');
 
 /**
  * Class to be used with jsDataQuery in order to format expression for MS SQL SERVER database
@@ -146,144 +147,25 @@ const _ = require('lodash');
             throw 'Illegal parameter passed to conditionToSql:' + JSON.stringify(cond);
         }
 
-    function nextNonComment(S, start){
-        let index = start;
-        while ((index < S.length) && (index >= 0)){
-            let C = S[index];
-
-            //Salta i commenti normali
-            if (C === '/'){
-                try{
-                    //vede se è un commento normale ossia /* asas */
-                    if (S[index + 1] === '*'){
-                        index = closedComment(S, index + 2);
-                        continue;
-                    }
-                    if (S[index + 1] === '/'){
-                        let next1 = S.IndexOf("\n", index);
-                        let next2 = S.IndexOf("\r", index);
-                        if ((next1 === -1) && (next2 === -1)){
-                            return S.length;
-                        }
-                        if (next1 === -1){
-                            index = next2 + 1;
-                            continue;
-                        }
-                        if (next2 === -1){
-                            index = next1 + 1;
-                            continue;
-                        }
-                        if (next1 < next2){
-                            index = next1 + 1;
-                        }
-                        else{
-                            index = next2 + 1;
-                        }
-                        continue;
-
-                    }
-                } catch (e){
-                    return -1;
-                }
-            }
-            if ((C === ' ') || (C === '\n') || (C === '\r') || (C === '\t')){
-                index++;
-                continue;
-            }
-            return index;
-        }
-
-        return -1;
-    }
-
-    function closedString(S, start, stop){
-        let index = start;
-        while (index < S.length){
-            if (S[index] === '\\'){// carattere di escape
-                index++;
-                index++;    //salta anche il carattere successivo al carattere di escape
-                continue;
-            }
-            if (S[index] === stop){
-                return index + 1;
-            }
-            index++;
-        }
-        return -1;
-    }
-
-    function closedComment(S, start){
-        let nextClose = S.indexOf("*/", start);
-        if (nextClose < 0){
-            return -1;
-        }
-        return nextClose + 2;
-    }
 
 
-        /**
-        *
-        * @param S
-        * @param start
-        * @param BEGIN
-        * @param END
-        * @returns {number|*}
-        */
-        function closeBlock(S, start, BEGIN,END){
-            let index = start;
-            let level = 1;
-            while ((index >= 0) && (index < S.length)){
-                index = nextNonComment(S, index);
-                if (index < 0){
-                    return -1;
-                }
-                let C = S[index];
-                if (C === '"'){
-                    index = closedString(S, index + 1, '"');
-                    continue;
-                }
-                if (C === '\''){
-                    index = closedString(S, index + 1, '\'');
-                    continue;
-                }
-                if (C === BEGIN){
-                    level++;
-                    index++;
-                    continue;
-                }
-                if (C === END){
-                    level--;
-                    index++;
-                    if (level === 0){
-                        return index;
-                    }
-                    continue;
-                }
-                index++;
-            }
-            return -1;
-        }
 
-        function isABlock(s){
-            if (!s.startsWith("(")){
-                return false;
-            }
-            if (!s.endsWith(")")){
-                return false;
-            }
-            return closeBlock(s,1,'(',')')===s.length;
-        }
+
+
+
+
+
         /**
          * Surround expression in parentheses
          * @method doPar
          * @public
-         * @param {string} expr
+         * @param {string|null} expr
          * @returns {string}
          */
         function doPar(expr) {
             if (expr === null) return expr;
             if (expr === '') return  expr;
-            if (isABlock(expr)){
+            if (Parser.isABlock(expr)){
                 return  expr;
             }
             return "(" + expr + ")";

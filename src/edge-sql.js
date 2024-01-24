@@ -197,17 +197,17 @@ let nCommand =0;
  * @param {string} query
  * @param {boolean} [raw] if true, data are left in raw state and will be objectified by the client
  * @param {int} [timeout=  this.defaultTimeout]
- * @returns {defer}  a sequence of {[array of plain objects]} or {meta:[column names],rows:[arrays of raw data]}
+ * @returns {Promise}  a sequence of {[array of plain objects]} or {meta:[column names],rows:[arrays of raw data]}
  */
 EdgeConnection.prototype.queryBatch = function (query, raw, timeout) {
-	var edge      = require('edge-js'),
+	let edge      = require('edge-js'),
 		edgeQuery = edge.func(this.sqlCompiler, _.assign({source: query,timeout:timeout||this.defaultTimeout}, this.getDbConn())),
 		def = defer();
-	//nextTick is necessary in order to run the sql function asyncronously, otherwise, cause of edge-js
+	//nextTick is necessary in order to run the sql function asynchronously, otherwise, cause of edge-js
 	//  and mysql blocking nature, it starts notifying tables before the promise is actually returned
 	//   causing data to be loss
 
-	var that=this;
+	let that=this;
 	process.nextTick(function () {
 		//console.log("queryBatch "+query);
 		nCommand++;

@@ -1,6 +1,7 @@
 /*global Environment,global,define,sqlFun */
 /*jslint nomen: true*/
 const _ = require('lodash');
+const Parser = require("./jsStringParser");
 
 
 /**
@@ -153,6 +154,11 @@ function conditionToSql(cond, context) {
  * @returns {string}
  */
 function doPar(expr) {
+    if (expr === null) return expr;
+    if (expr === '') return  expr;
+    if (Parser.isABlock(expr)){
+        return  expr;
+    }
     return "(" + expr + ")";
 }
 

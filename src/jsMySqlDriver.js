@@ -35,8 +35,17 @@ const mapIsolationLevels = {
     'SERIALIZABLE': 'SERIALIZABLE'
 };
 
-
-
+const codedTypes ={
+    'a':'DATE',
+    'b':'CHAR(1)',
+    'i':'INT',
+    'c':'VARCHAR(255)',
+    'n':'DECIMAL(19,6)',
+    'f':'FLOAT',
+    'd':'DATETIME',
+    'v':'DECIMAL(23,2)',
+    'default':'VARCHAR(255)'
+};
 
 
 const mapping = {
@@ -121,8 +130,8 @@ function SqlParameter(paramValue,paramName,varName, sqlType, forOutput){
  * @name Connection
  * @param {object} options
  * {string} [options.driver='SQL Server Native Client 11.0'] Driver name
- * {string} [options.useTrustedConnection=true] is assumed true if no user name is provided
- * {string} [options.user] user name for connecting to db
+ * {string} [options.useTrustedConnection=true] is assumed true if no username is provided
+ * {string} [options.user] username for connecting to db
  * {string} [options.pwd] user password for connecting to db
  * {string} [options.timeOut] time out to connect default 600
  * {string} [options.database] database name
@@ -228,6 +237,47 @@ Connection.prototype.destroy = function () {
 Connection.prototype.clone = function () {
     return new Connection({connectionString: this.adoString});
 };
+
+
+const lowerCaseKeywords = [];
+/* tables and columns name must be quoted otherwise they are converted to uppercase */
+function quoteStringIfNecessary(str){
+    if (typeof str !== "string")  {
+        return str;
+    }
+
+
+    if (/[a-z]/.test(str)|| lowerCaseKeywords.includes(str.toLowerCase())){
+        //has lower cases
+        return "`"+str.trim()+"`";
+    }
+    return str.trim();
+}
+
+
+function quoteColumnList(col){
+    if (typeof col !== "string")  {
+        return col;
+    }
+    return col.split(",").map(s=>quoteStringIfNecessary(s)).join();
+}
+
+function quoteOrderBy(col){
+    if (typeof col !== "string")  {
+        return col;
+    }
+    return col.split(",").map(s=>{
+            let ss = s.split(' ');
+            ss[0]= quoteStringIfNecessary(ss[0]);
+            return ss.join(' ');
+        }
+    ).join();
+}
+
+function quoteArrayIfLowerCase(arr){
+    return arr.map(s=>quoteStringIfNecessary(s));
+}
+
 
 /**
  * Sets the Transaction isolation level for current connection
@@ -581,7 +631,7 @@ Connection.prototype.getUpdateCommand = function (options) {
 
 
 /**
- * evaluates the sql command to call aSP with a list of parameters each of which is an object having:
+ * evaluates the sql command to call a SP with a list of parameters each of which is an object having:
  *  value,
  *  optional 'sqltype' name compatible with the used db. it is mandatory if is an output parameter
  *  optional out: true if it is an output parameter
@@ -852,15 +902,15 @@ Connection.prototype.namedParameterSupported = function(){
  */
 Connection.prototype.variableNameForNBits = function(num,nbits){
     if (nbits <= 14) {
-        return "@s"+num;
+        return "s"+num;
     }
     if (nbits <= 30) {
-        return "@i"+num;
+        return "i"+num;
     }
     if (nbits <= 62) {
-        return "@b"+num;
+        return "b"+num;
     }
-    return "@c"+num;
+    return "c"+num;
 };
 
 
@@ -973,9 +1023,11 @@ Connection.prototype.getFormatter = function () {
 };
 
 Connection.prototype.mapping= mapping;
+Connection.prototype.codedTypes= codedTypes;
 
 module.exports = {
     Connection: Connection,
+    codedTypes:codedTypes,
     IsolationLevels:mapIsolationLevels,
     cType: CType,
     objectify:objectify

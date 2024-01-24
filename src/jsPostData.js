@@ -168,7 +168,7 @@ SinglePostData.prototype = {
  *
  * @param {DataAccess} conn
  * @param {BusinessLogicResult} result
- * @returns {boolean|*}
+ * @returns {Promise<boolean|*>}
  */
 SinglePostData.prototype.doUpdate= function (conn, result){
   if (!this.updateDelegate) return Deferred().resolve(true);
@@ -192,7 +192,7 @@ SinglePostData.prototype.doUpdate= function (conn, result){
  *  This is meant to be replaced or overridden in derived classes
  * @param {DataSet} ds
  * @param {Context} context
- * @param {function (conn, d, result)} [updateDelegate]
+ * @param {function (DataAccess, DataSet, BusinessLogicResult)} [updateDelegate]
  * @return {Promise<SinglePostData>}
  */
 SinglePostData.prototype.init = function ( ds,context, updateDelegate){
@@ -757,14 +757,14 @@ PostData.prototype.createBusinessLogicResult = function (){
  *
  * @param {DataSet} ds
  * @param {Context} context
- * @param {function (conn, d, result)} [updateDelegate]
+ * @param {function (DataAccess, DataSet, BusinessLogicResult)} [updateDelegate]
  * @return {Promise<SinglePostData>}
  */
 PostData.prototype.init = function ( ds,context, updateDelegate){
   if (!this.conn){
     this.conn = context.dataAccess;
   }
-  let p =this.createSingleDataSetPost();
+  let p =this.createSingleDataSetPost(ds,this.conn);
   this.allPost.push(p);
   this.context = context;
 
@@ -1006,7 +1006,7 @@ PostData.prototype.getBusinessLogic = function (context, rowChanges){
 
 /**
  * Builds a chained function, chaining each the Deferred function with "then"
- * @param  {Array.<Deferred>} tasks each task is a function that returns a deferred. Not the deferred itself!
+ * @param  {Array.<Promise>} tasks each task is a function that returns a deferred. Not the deferred itself!
  * @return {Promise}
  */
 function promiseWaterfall(tasks) {
@@ -1105,7 +1105,13 @@ PostData.prototype.doAllLog = function (conn){
  */
 PostData.prototype.doAllUpdate = function (conn, result){
   let that = this;
-  let allUpdateFn = _.map(this.allPost, (p)=> ()=>p.doUpdate(conn, result));
+  let allUpdateFn = _.map(this.allPost,
+      /**
+       *
+       * @param p
+       * @returns {Promise}
+       */
+        (p)=> ()=>{return p.doUpdate(conn, result)});
   return promiseWaterfall(allUpdateFn).then(()=>result);
 };
 

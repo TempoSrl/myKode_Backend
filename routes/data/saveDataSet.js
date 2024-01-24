@@ -157,6 +157,9 @@ async function saveDataSet(req,res,next) {
         }
         let dataRowAttachModified = await attachUtils.manageAttachWindowsCompliant(ctx, outDs);
         manageRegistration(outDs);
+        /**
+         * @type {canIgnore: boolean, checks: BasicMessage[], data: DataSet}
+         */
         let postResult = await postData.doPost({previousRules: prevResult});
 
         let success = true;

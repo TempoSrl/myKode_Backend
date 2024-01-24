@@ -89,7 +89,7 @@ const exec  = require("child_process").execFileSync;
 //https://www.npmjs.com/package/grunt-contrib-jasmine
 //grunt.loadNpmTasks('grunt-contrib-jasmine');
 
-module.exports = function (grunt) {
+module.exports = function (grunt){
 
     // Load grunt tasks automatically (including grunt.loadNpmTasks('grunt-contrib-jasmine');
     require('load-grunt-tasks')(grunt);
@@ -115,8 +115,8 @@ module.exports = function (grunt) {
             }
         },
 
-        open : {
-            doc : {
+        open: {
+            doc: {
                 path: 'D:/progetti/jsMetaBackend/docs/index.md',
                 app: 'Google Chrome'  //also FireFox
             },
@@ -132,19 +132,19 @@ module.exports = function (grunt) {
             clientTest: {
                 command: 'npx jasmine test/client/*Spec.js'
             },
-            jsdoc:{
+            jsdoc: {
                 command: 'jsdoc src'
             },
-            jsdocToMD:{
+            jsdocToMD: {
                 command: 'jsdoc2md src/*.js'
             }
         },
 
         pkg: grunt.file.readJSON('package.json'),
 
-        jsdoc : {
-            dist : {
-                plugins: ["markdown","jsdoc-summarize2"],
+        jsdoc: {
+            dist: {
+                plugins: ["markdown", "jsdoc-summarize2"],
                 src: ['src/*.js',
                     'client/components/*/*.js',
                     //'client/components/i18n/*.js',
@@ -157,20 +157,20 @@ module.exports = function (grunt) {
         },
 
         yuidoc: {
-          compile: {
-            name: '<%= pkg.name %>',
-            description: '<%= pkg.description %>',
-            version: '<%= pkg.version %>',
-            url: '<%= pkg.homepage %>',
-            options: {
-              paths: ['./src'],
-              outdir: 'docs'
+            compile: {
+                name: '<%= pkg.name %>',
+                description: '<%= pkg.description %>',
+                version: '<%= pkg.version %>',
+                url: '<%= pkg.homepage %>',
+                options: {
+                    paths: ['./src'],
+                    outdir: 'docs'
+                }
             }
-          }
         },
 
         watch_common: {
-            files: ['src/*.js','client/components/metadata/*.js',
+            files: ['src/*.js', 'client/components/metadata/*.js',
                 'client/components/i18n/*.js'],
             tasks: ['jasmine:common'],
             options: {
@@ -261,9 +261,9 @@ module.exports = function (grunt) {
         },
 
         jasmine: {
-            common_server:{
+            common_server: {
                 spec_dir: "",
-                spec_files: ["./test/client/*Spec.js","./test/spec/*Spec.js"],
+                spec_files: ["./test/client/*Spec.js", "./test/spec/*Spec.js"],
                 env: jasmineEnv
             },
             common: {
@@ -295,22 +295,22 @@ module.exports = function (grunt) {
     let classesClient = [];
     let classesMidway = [];
 
-    function setTestE2e(dbCode,value){
+    function setTestE2e(dbCode, value){
         let dbInfo = DBList.getDbInfo(dbCode);
-        dbInfo.createTestSession=value;
-        DBList.setDbInfo(dbCode,dbInfo);
+        dbInfo.createTestSession = value;
+        DBList.setDbInfo(dbCode, dbInfo);
     }
 
     function setTestE2eOn(){
-        setTestE2e("main",true);
+        setTestE2e("main", true);
     }
 
     function setTestE2eOff(){
-        setTestE2e("main",false);
+        setTestE2e("main", false);
     }
 
     grunt.registerTask("loginON", "set test ON", setTestE2eOn);
-    grunt.registerTask("loginOFF","set test OFF", setTestE2eOff);
+    grunt.registerTask("loginOFF", "set test OFF", setTestE2eOff);
 
     gruntConfig.jasmine["all_e2e_app"] = {
         spec_dir: './test/spec_e2e_app/',
@@ -321,10 +321,10 @@ module.exports = function (grunt) {
     //Cerca i test sui moduli in  src
     fs.readdirSync(path.join(__dirname, 'src')).forEach(file => {
         let className = file.replace(".js", "");
-        if (fs.existsSync(path.join(__dirname, 'test', 'spec', className + 'Spec.js'))) {
+        if (fs.existsSync(path.join(__dirname, 'test', 'spec', className + 'Spec.js'))){
             classes.push(className);
         }
-        if (fs.existsSync(path.join(__dirname, 'test', 'midway', className + 'Spec.js'))) {
+        if (fs.existsSync(path.join(__dirname, 'test', 'midway', className + 'Spec.js'))){
             classesMidway.push(className);
         }
     });
@@ -332,21 +332,21 @@ module.exports = function (grunt) {
     //Cerca i test sulle classi  client/components/metadata
     fs.readdirSync(path.join(__dirname, 'client', 'components', 'metadata')).forEach(file => {
         let className = file.replace(".js", "");
-        if (fs.existsSync(path.join(__dirname, 'test', 'spec', className + 'Spec.js'))) {
+        if (fs.existsSync(path.join(__dirname, 'test', 'spec', className + 'Spec.js'))){
             classes.push(className);
         }
-        if (fs.existsSync(path.join(__dirname, 'test', 'midway', className + 'Spec.js'))) {
+        if (fs.existsSync(path.join(__dirname, 'test', 'midway', className + 'Spec.js'))){
             classesMidway.push(className);
         }
-        if (fs.existsSync(path.join(__dirname, 'test', 'client', className + 'Spec.js'))) {
+        if (fs.existsSync(path.join(__dirname, 'test', 'client', className + 'Spec.js'))){
             classesClient.push(className);
         }
     });
-    let allJasmineConfig={};
+    let allJasmineConfig = {};
 
     //crea gli unit test con jasmine (sia quelli sotto src che quelli sotto client/components/metadata
     // questi saranno visibili sotto il task "jasmine"
-    classes.forEach(function (className) {
+    classes.forEach(function (className){
         //console.log("registering "+className+"Spec");
         //Aggiunge la configurazione sotto "jasmine"
         allJasmineConfig[className + "Spec"] = {
@@ -359,7 +359,7 @@ module.exports = function (grunt) {
     classesMidway.push('jsApplicationAnonymous');
 
     //Crea la configurazione per tutti i test Midway
-    classesMidway.forEach(function (className) {
+    classesMidway.forEach(function (className){
         allJasmineConfig[className + "Midway"] = {
             spec_dir: './test/midway/',
             spec_files: [className + "Spec.js"],
@@ -368,7 +368,7 @@ module.exports = function (grunt) {
     });
 
     //Configura i test client
-    classesClient.forEach(function (className) {
+    classesClient.forEach(function (className){
         allJasmineConfig[className + "Client"] = {
             spec_dir: 'test/client',
             spec_files: [className + "Spec.js"],
@@ -380,89 +380,89 @@ module.exports = function (grunt) {
     grunt.initConfig(gruntConfig);
 
     // Convert to MD every file under the
-    grunt.registerTask("jsDocMD","jsdoc to MD",async function(cfgName){
+    grunt.registerTask("jsDocMD", "jsdoc to MD", async function (cfgName){
         let folders = gruntConfig.jsdoc[cfgName].src;
         let done = this.async();
-        let processed=0;
-        folders.forEach(folder=>{
-            let folderComplete = path.join(__dirname,folder);
+        let processed = 0;
+        folders.forEach(folder => {
+            let folderComplete = path.join(__dirname, folder);
 
-            glob(folder, {}, (err, files)=>{
+            glob(folder, {}, (err, files) => {
                 if (err){
                     console.log(err);
                     return;
                 }
                 //console.log(files);
                 files.forEach(file => {
-                    if (path.basename(file)[0]==='_') return;
-                    try {
+                    if (path.basename(file)[0] === '_') return;
+                    try{
                         let md = jsdoc2md.renderSync({files: file});
                         const basename = path.basename(file, path.extname(file));
                         const newName = path.join(path.dirname(file), basename + ".md");
                         fs.writeFileSync(newName, md);
-                    }
-                    catch (e){
+                    } catch (e){
                         console.log(e);
                     }
                 });
-                processed+=1;
-                if (processed===folders.length) done();
+                processed += 1;
+                if (processed === folders.length) done();
             });
 
 
         });
     });
 
-    grunt.registerTask("jasmine", "jasmine runner", async function (configName) {
+    grunt.registerTask("jasmine", "jasmine runner", async function (configName){
         let done = this.async();
         jasmineObj.loadConfig(gruntConfig.jasmine[configName]);
 
         let result = await jasmineObj.execute();
 
-        if (result.overallStatus!=="failed") {
+        if (result.overallStatus !== "failed"){
             grunt.log.writeln('No specs has failed');
-        } else {
+        }
+        else{
             grunt.log.writeln('At least one spec has failed');
         }
         done();
     });
     grunt.registerTask('common unit', ['jasmine:common']);
     grunt.registerTask('server unit', ['jasmine:server']);
-    grunt.registerTask("server midway",["NodeStart","jasmine:midway","NodeStop"]); // , "NodeStop"
-    grunt.registerTask("server e2e", ["createSqlDB","NodeStart",  "karma:server_e2e","destroySqlDB","NodeStop"]);
+    grunt.registerTask("server midway", ["NodeStart", "jasmine:midway", "NodeStop"]); // , "NodeStop"
+    grunt.registerTask("server e2e", ["createSqlDB", "NodeStart", "karma:server_e2e", "destroySqlDB", "NodeStop"]);
 
     grunt.registerTask("client unit", ["karma:spec"]);
-    grunt.registerTask("client midway", ["createSqlDB","NodeStart","karma:midway","destroySqlDB","NodeStop"]);
+    grunt.registerTask("client midway", ["createSqlDB", "NodeStart", "karma:midway", "destroySqlDB", "NodeStop"]);
     grunt.registerTask("client e2e", ["createSqlDB", "NodeStart",
         "karma:client_e2e", "karma:client_e2e_app",
-        "destroySqlDB","NodeStop"]);
+        "destroySqlDB", "NodeStop"]);
     grunt.registerTask("client e2e_app", ["createSqlDB", "NodeStart",
         "karma:client_e2e_app",
         "destroySqlDB", "NodeStop"]);
 
     grunt.registerTask('all server',
-        [ 'jasmine:common_server', "createSqlDB","NodeStart",
+        ['jasmine:common_server', "createSqlDB", "NodeStart",
             "karma:server_e2e",
             "destroySqlDB",
             "jasmine:midway", //jasmine:midway crea e distrugge il db
             "NodeStop"
         ]);
-    grunt.registerTask('all client',['client unit',
-        "createSqlDB", "NodeStart" ,
-        "karma:midway","karma:client_e2e","karma:client_e2e_app",
+    grunt.registerTask('all client', ['client unit',
+        "createSqlDB", "NodeStart",
+        "karma:midway", "karma:client_e2e", "karma:client_e2e_app",
         "destroySqlDB", "NodeStop"]);
     grunt.registerTask("all",
-        ['jasmine:common_server',"karma:spec",
-            "createSqlDB", "NodeStart" ,
+        ['jasmine:common_server', "karma:spec",
+            "createSqlDB", "NodeStart",
             "karma:server_e2e",
-            "karma:midway","karma:client_e2e","karma:client_e2e_app",
+            "karma:midway", "karma:client_e2e", "karma:client_e2e_app",
             "destroySqlDB",
-            "jasmine:midway","NodeStop",
+            "jasmine:midway", "NodeStop",
         ]);
 
-    grunt.registerTask('client pages e2e',[
+    grunt.registerTask('client pages e2e', [
         "loginOFF",
-         "NodeStart" ,
+        "NodeStart",
         "karma:client_e2e_pages",
         "NodeStop",
         "loginON"
@@ -470,7 +470,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask('docMD', ['jsDocMD:dist']);
 
-    grunt.registerTask('doc', ['jsdoc','shell:jsdoc', 'open:doc']);
+    grunt.registerTask('doc', ['jsdoc', 'shell:jsdoc', 'open:doc']);
 
 
 
