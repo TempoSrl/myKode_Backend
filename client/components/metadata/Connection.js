@@ -1,4 +1,4 @@
-/* global appMeta */
+/* global appMeta,navigator */
 /**
  * @module Connection
  * @description
@@ -19,15 +19,15 @@
      * Enum for the type of request. In case of multipleResult we can have notify and at the end the resolve
      * @type {{resolve: string, notify: string, reject: string}}
      */
-    var RequestTypeEnum = {
+    let RequestTypeEnum = {
         resolve : 'resolve',
         notify : 'notify',
         reject : 'reject'
     };
-    
-    var logger = appMeta.logger;
-    var logType = appMeta.logTypeEnum;
-    var serverErrorTypeEnum = appMeta.routing.serverErrorTypeEnum;
+
+    let logger = appMeta.logger;
+    let logType = appMeta.logTypeEnum;
+    let serverErrorTypeEnum = appMeta.routing.serverErrorTypeEnum;
 
     /**
      * @constructor Connection
@@ -72,7 +72,7 @@
             //la riga seguente l'ho commentata e poi sostituita perché nella login page
             //mi dava l'errore "Deferred is not a function"
             //var def = Deferred("Connection.call");
-            var def = appMeta.Deferred("Connection.call");
+            let def = appMeta.Deferred("Connection.call");
 
             // controllo se c'è connessione
             if (!navigator.onLine){
@@ -96,6 +96,7 @@
             // Rilancio al chiamante, aggiungendo logica in questa fase se necessario
             // N.B la progress quindi non serve gestirla, la gestisce direttamente il chiamante finale
             // poichè inutile qui, non aggiungo logica
+
             return this.currentBackendManager.call(callConfigObj, objConn)
                 .then(
                     function (data) {
@@ -103,17 +104,25 @@
                     })
                 .fail(
                     function (err) {
+                        let msg;
                         //console.log("currentBackendManager.call error", err);
-                        var logtype = logType.INFO;
+                        let logtype = logType.INFO;
                         if (objConn.noLogError === undefined){
                             // se è scaduto il token, lancio evento. Così lo posso intercettare fuori e fare le opportune operazioni
                             // Per ora ho gestito err http 401 Unhautorized. Capire altri errori http cosa fare
-                            var msg = dict.serverUnreachable;
+                            msg = dict.serverUnreachable;
                             if (err.status) {
                                 // ripulisco errore
                                 var serr = null;
+                                if (typeof err === 'string') {
+                                    serr = err;
+                                }
                                 if (err.text) {
-                                    serr = err.text.replace(/"/g, '');
+                                    serr= err.text;
+                                    if (typeof err.text === 'object') {
+                                        serr = err.text.error; //Response from node
+                                    }
+                                    serr = serr.replace(/"/g, '');
                                 }
 
                                 if (err.status === 401) {
@@ -130,7 +139,7 @@
                                 if (err.status === 500) {
                                     msg = dict.serverErrorInternal;
                                 }
-                                if (err.text) {
+                                if (serr) {
                                     // gestione custom per filtro serializzato con undefined
                                     if (serr.startsWith(serverErrorTypeEnum.FilterWithUndefined)) {
                                         let parts = serr.split('$__$');
@@ -195,7 +204,7 @@
                             logger.log(logtype, msg + " method: '" + objConn.method + "' ",
                                 showInfo ? " errors: " + JSON.stringify(err) : "",
                                 showInfo ? " prm: " + JSON.stringify(objConn.prm) : "").
-                                then(() => def.reject(err))
+                                then(() => def.reject(err));
                         }
                         return def.promise();
                     });
@@ -302,7 +311,7 @@
             var now = new Date(),
             d2expire = new Date(now);
             d2expire.setMinutes (now.getMinutes() + 5);
-            this.setToken(anonymousToken, d2expire, null) 
+            this.setToken(anonymousToken, d2expire, null);
         }
 
     };

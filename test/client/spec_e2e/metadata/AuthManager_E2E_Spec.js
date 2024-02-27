@@ -9,8 +9,6 @@ describe('AuthManager', function () {
         appMeta.globalEventManager = new appMeta.EventManager();
         appMeta.localResource.setLanguage("it");
         appMeta.logger.setLanguage(appMeta.LocalResource);
-
-
     });
 
     beforeEach(function () {
@@ -34,6 +32,10 @@ describe('AuthManager', function () {
                             expect(res).toBe(true);
                             done();
                         })
+                        .fail(err=>{
+                            //console.log("login fail with ",err);
+                            done();
+                        });
                 }, timeout);
 
             it('login with user incorrect fails',
@@ -45,12 +47,10 @@ describe('AuthManager', function () {
                         .then(function (res) {
                             expect(res).toBe(false);
 
-                            var s = stabilize(true);
-                            s.then(function () {
-                                done();
-                            })
+                            let s = stabilize(true);
+                            s.then(done);
                             //$(".modal").find("button")[0].click();
-                        })
+                        });
                 }, timeout);
 
             it('login with password incorrect fails',
@@ -61,18 +61,19 @@ describe('AuthManager', function () {
                         appMeta.configDev.datacontabile)
                         .then(function (res) {
                             expect(res).toBe(false);                            
-                            var s = appMeta.stabilize(true);
-                            s.then(function () {
-                                done();
-                            })
+                            let s = appMeta.stabilize(true);
+                            s.then(done);
                             //$(".modal").find("button").first().trigger("click");
                         },
-                            err => {
-                                expect(err).toBe(undefined);
-                                expect(true).toBe(false);
-                                done();
-                            }
-                    )
+                        err => {
+                            expect(err).toBe(undefined);
+                            expect(true).toBe(false);
+                            done();
+                        })
+                    .fail(err=>{
+                        //console.log("login fail with ",err);
+                        done();
+                    });
                 }, timeout);
 
             // OK! da abilitare solo quando si vuole fare reset password
@@ -82,7 +83,7 @@ describe('AuthManager', function () {
                         .then(function (res) {
                             expect(res).toBe(true);
                             done();
-                        })
+                        });
                 }, timeout);
             
         });

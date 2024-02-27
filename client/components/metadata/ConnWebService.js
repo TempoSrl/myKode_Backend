@@ -103,7 +103,6 @@
          * @param {Object} thrownError
          */
         error: function (deferred, xhr, status, thrownError) {
-            //console.log(xhr);
             let err = xhr.responseText;
             //if (err.Message) err = JSON.parse(err).Message;
             //console.log("got error from web service! " + xhr.responseJSON + " status " + status + " body:" + thrownError);

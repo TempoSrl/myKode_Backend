@@ -143,7 +143,7 @@ function SqlParameter(paramValue,paramName, varName,sqlType, forOutput){
  * {string} [options.timeOut] time out to connect default 600
  * {string} [options.database] database name
  * {string} [options.sqlCompiler] Edge Compiler
- * {string} [options.defaultSchema=options.user ||'DBO'] default schema associated with user name
+ * {string} [options.defaultSchema=options.user ||'DBO'] default schema associated with username
  * {string} [options.connectionString] connection string to connect (can be used instead of all previous listed)
  * @constructor
  */
@@ -198,16 +198,19 @@ function Connection(options) {
      */
     this.isolationLevel = null;
 
-    this.adoString = 'Data Source=' + this.opt.server +
-        (this.opt.database? ";Initial Catalog=" + this.opt.database : "")+
-        (this.opt.useTrustedConnection ?
-            ";Integrated Security=True" :
-        ";User ID=" + this.opt.user + ";Password=" + this.opt.pwd ) +
-        ";Application Name=HiNode" +
+    this.adoString = options.connectionString;
+    if (!this.adoString){
+        this.adoString = 'Data Source=' + this.opt.server +
+            (this.opt.database ? ";Initial Catalog=" + this.opt.database : "") +
+            (this.opt.useTrustedConnection ?
+                ";Integrated Security=True" :
+                ";User ID=" + this.opt.user + ";Password=" + this.opt.pwd) +
+            ";Application Name=HiNode" +
             //"WorkStation ID =" + Environment.MachineName.ToUpper() +
-        ";Pooling=false" +
-        ";Connection Timeout="+this.timeOut+";";
-
+            ";Pooling=false" +
+            ";Connection Timeout=" + this.timeOut + ";TrustServerCertificate=true;";
+    }
+    //console.log("adoString is: ",this.adoString);
     /**
      *
      * @type {EdgeConnection}
@@ -254,7 +257,7 @@ Connection.prototype.destroy = function () {
  * @returns {Connection}
  */
 Connection.prototype.clone = function () {
-    return new Connection({connectionString: this.connectionString});
+    return new Connection({connectionString: this.adoString});
 };
 
 

@@ -229,7 +229,8 @@ describe('oracleDriver ', function () {
 
         it('open with bad credential should return an error', function (done) {
             expect(canExecute).toBeTruthy();
-            let badSqlConn = getConnection('bad');
+            let badSqlConn;
+            badSqlConn = getConnection('bad');
             badSqlConn.open()
                 .done(function (res) {
                     expect(res).toBe(undefined);

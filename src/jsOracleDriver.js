@@ -219,20 +219,21 @@ function Connection(options) {
     //     ";User Id=" + this.opt.user + ";Password=" + this.opt.pwd + ";Integrated Security=no") +
     //     ";Pooling=false" +
     //     ";Connection Timeout="+this.timeOut+";";
-
-    this.adoString =
-        "Data Source=" + this.opt.server +
-        (this.opt.port ? (":"+this.opt.port) : "")+
-        "/"+
-        this.opt.database+
-        (this.opt.useTrustedConnection ?
-                ";Integrated Security=true" :
-                ";User Id=" + this.opt.user + ";Password=" + this.opt.pwd
-        )+
-        (this.opt.dbaPrivilege ? ";DBA Privilege=SYSDBA" : "")  +
-        ";Pooling=False" +
-        ";Connection Timeout="+this.timeOut+";";
-
+    this.adoString = options.connectionString;
+    if (!this.adoString){
+        this.adoString =
+            "Data Source=" + this.opt.server +
+            (this.opt.port ? (":" + this.opt.port) : "") +
+            "/" +
+            this.opt.database +
+            (this.opt.useTrustedConnection ?
+                    ";Integrated Security=true" :
+                    ";User Id=" + this.opt.user + ";Password=" + this.opt.pwd
+            ) +
+            (this.opt.dbaPrivilege ? ";DBA Privilege=SYSDBA" : "") +
+            ";Pooling=False" +
+            ";Connection Timeout=" + this.timeOut + ";";
+    }
     /**
      *
      * @type {EdgeConnection}

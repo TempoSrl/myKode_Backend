@@ -84,17 +84,14 @@ JsApplication.prototype = {
 
     error: function (err,req,res,next){
         if (err instanceof Error){
-            res.status(401).json({
-                err:err.stack,
-                Message: err.message
-            });
+            res.status(401).send(err.message);
             return;
         }
-
-        res.status(401).json({
-            err:err? err.stack:undefined,
-            Message: err
-        });
+        res.status(401).send(err);
+        // res.status(401).json({
+        //     err:err? err.stack:undefined,
+        //     Message: err
+        // });
     },
 
 
@@ -364,9 +361,7 @@ JsApplication.prototype = {
             next();
         })
         .fail(err=>{
-            res.status(500).json({
-                error: err
-            });
+            res.status(500).send(err);
         });
 
     },
@@ -393,9 +388,7 @@ JsApplication.prototype = {
         try {
             let token = req.get(tokenConfig.options.requestProperty); //default is auth
             if (!token) {
-                res.status(401).json({
-                    error: 'No token'
-                });
+                res.status(401).send('No token');
                 return;
             }
             //If a token is not present, evaluates an anonymous identity
@@ -405,9 +398,7 @@ JsApplication.prototype = {
 
             //let env = this.environments[sessionID];
             if (!env) {
-                res.status(401).json({
-                    error: 'Session not found'
-                });
+                res.status(401).send('Session not found');
                 return;
             }
 
@@ -417,15 +408,11 @@ JsApplication.prototype = {
                 this.createContext(pooledConn, env, req, res, next);
             })
             .fail(err=>{
-                res.status(401).json({
-                    error: 'Db not connected'
-                });
+                res.status(401).send('Db not connected');
             });
         }
         catch (err) {
-            res.status(401).json({
-                error: 'Invalid request!'
-            });
+            res.status(401).send('Invalid request!');
         }
     },
 

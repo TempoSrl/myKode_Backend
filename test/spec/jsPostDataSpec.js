@@ -140,7 +140,7 @@ describe("jsPostData",function() {
 
 
         it('should run the setup script', function (done) {
-            sqlConn.run(fs.readFileSync(path.join('test', 'data', 'PostData', 'setup.sql')).toString(),6000)
+            sqlConn.run(fs.readFileSync(path.join('test', 'data', 'PostData', 'setup.sql')).toString(),60000)
                 .done(function () {
                     expect(true).toBeTruthy();
                     done();

@@ -44,7 +44,6 @@ var mySqlDriver = require('../../src/jsMySqlDriver'),
         serializable: 'SERIALIZABLE'
     };
 const {v4: uuidv4} = require("uuid");
-const sqlServerDriver = require("../../src/jsSqlServerDriver");
 
 
 describe('MySqlDriver ', function () {
@@ -187,7 +186,6 @@ describe('MySqlDriver ', function () {
     });
 
     describe('open', function () {
-
 
         it('open should return a deferred', function (done) {
             expect(canExecute).toBeTruthy();
@@ -599,7 +597,7 @@ describe('MySqlDriver ', function () {
                 errCmd = sqlConn.giveErrorNumberDataWasNotWritten(3);
             let sql = '';
 
-            sql = sqlConn.appendCommands([sqlCmd, errCmd]);
+            sql = "BEGIN\n"+sqlConn.appendCommands([sqlCmd, errCmd]);+";\nEND;\n";
 
             sqlConn.queryBatch(sql, false)
                 .done(function (result) {

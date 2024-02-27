@@ -100,7 +100,7 @@ describe('edgeSql ', function () {
             good: "Server=localhost;database="+dbName+";uid="+dbConfig.user+";pwd="+dbConfig.pwd+";" +
                 "Pooling=False;Connection Timeout=600;Allow User Variables=True;",
             bad: "Server=localhost;database="+dbName+";uid="+dbConfig.user+";pwd=x;" +
-                "Pooling=False;Connection Timeout=600;Allow User Variables=True;"
+                "Pooling=False;Connection Timeout=600;Allow User Variables=True;" //
         };
         driver = 'mySql';
     }
@@ -109,7 +109,7 @@ describe('edgeSql ', function () {
             good: "Server=127.0.0.1;database="+dbName+";uid=root;pwd=;"+
             "Pooling=False;Connection Timeout=600;Allow User Variables=True;",
             bad:  "Server=127.0.0.1;database="+dbName+";uid=root;pwd=x;"+
-            "Pooling=False;Connection Timeout=600;Allow User Variables=True;"
+            "Pooling=False;Connection Timeout=600;Allow User Variables=True;" //TrustServerCertificate=true;
         };
         driver = 'mySql';
     }

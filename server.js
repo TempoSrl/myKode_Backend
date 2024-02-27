@@ -36,7 +36,7 @@ return Deferred.when(appList.map(appCfg=>{
             return application.init(appCfg)
                 .then(()=>{
                     console.log("using route "+appCfg.route);
-                  return expressApplication.use(appCfg.route,application.getApp());
+                    return expressApplication.use(appCfg.route,application.getApp());
                 });
         }))
     .then(()=>{

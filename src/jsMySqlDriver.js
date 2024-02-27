@@ -188,15 +188,17 @@ function Connection(options) {
      * @type {String}
      */
     this.isolationLevel = null;
-
-    this.adoString = 'Server=' + this.opt.server +
-        (this.opt.database? ";database=" + this.opt.database : "")+
-        (this.opt.useTrustedConnection ?
+    this.adoString = options.connectionString;
+    if (!this.adoString){
+        this.adoString = 'Server=' + this.opt.server +
+            (this.opt.database ? ";database=" + this.opt.database : "") +
+            (this.opt.useTrustedConnection ?
                 ";IntegratedSecurity=yes;uid=auth_windows" :
                 ";uid=" + this.opt.user + ";pwd=" + this.opt.pwd) +
-        ";Pooling=False" +
-        ";Connection Timeout="+this.timeOut+
-        ";Allow User Variables=True;";
+            ";Pooling=False" +
+            ";Connection Timeout=" + this.timeOut +
+            ";Allow User Variables=True;";
+    }
     /**
      * 
      * @type {EdgeConnection}
@@ -368,7 +370,6 @@ Connection.prototype.open = function () {
                 });
         })
         .fail(function (err) {
-            connDef.reject('open fail' + err);
             connDef.reject(err);
         });
     return connDef.promise();
@@ -886,7 +887,7 @@ Connection.prototype.sqlTypeForNBits = function(nbits){
  * @return string
  */
 Connection.prototype.giveErrorNumberDataWasNotWritten = function (errNumber) {
-    return 'if (ROW_COUNT()=0) BEGIN select ' + formatter.quote(errNumber) + '; RETURN; END';
+    return 'DECLARE rr int;\n SELECT ROW_COUNT() INTO rr;\nif rr=0 THEN\n select ' + formatter.quote(errNumber) + ';\n LEAVE;\n END IF;\n';
 };
 
 
@@ -902,15 +903,15 @@ Connection.prototype.namedParameterSupported = function(){
  */
 Connection.prototype.variableNameForNBits = function(num,nbits){
     if (nbits <= 14) {
-        return "s"+num;
+        return "_s"+num;
     }
     if (nbits <= 30) {
-        return "i"+num;
+        return "_i"+num;
     }
     if (nbits <= 62) {
-        return "b"+num;
+        return "_b"+num;
     }
-    return "c"+num;
+    return "_c"+num;
 };
 
 

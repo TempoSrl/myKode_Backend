@@ -11,8 +11,22 @@
 const path = require("path");
 const readline = require('readline');
 const chalk = import('chalk');
+const SpecReporter = require('jasmine-spec-reporter').SpecReporter;
 
+let inspectParameter = '--inspect';
+let inspectArg = process.execArgv.find(arg => arg.startsWith('--inspect-brk='));
+if (false) {
+    // Estrai il numero di porta dal parametro --inspect-brk
+    let port = inspectArg.split('=')[1];
 
+    // Ora puoi utilizzare la porta per la nuova istanza di Node
+
+    inspectParameter = '--inspect-brk='+port;
+    console.log('inspectParameter is:', port);
+}
+else {
+    console.log("Grunt running without debug");
+}
 const Deferred = require("JQDeferred");
 
 const jasmineEnv=  {
@@ -29,7 +43,9 @@ const jasmineEnv=  {
 
     // Run specs in semi-random order
     random: false
+
 };
+
 
 let secret = require('./config/secret');
 const DBList = require("./src/jsDbList");
@@ -62,21 +78,31 @@ jasmineObj.jasmine.getEnv().clearReporters(); // remove default reporter logs
 const JasmineConsoleReporter = require('jasmine-console-reporter');
 
 
-const rep = JasmineClass.ConsoleReporter;  //require("jasmine.console_reporter.js");
-
+//const rep = JasmineClass.ConsoleReporter;  //require("jasmine.console_reporter.js");
+// new JasmineConsoleReporter
 const reporter = new JasmineConsoleReporter({
-    colors: 2,           // (0|false)|(1|true)|2
-    cleanStack: 1,       // (0|false)|(1|true)|2|3
-    verbosity: 3,        // (0|false)|1|2|(3|true)|4|Object
-    listStyle: 'indent', // "flat"|"indent"
-    timeUnit: 'ms',      // "ms"|"ns"|"s"
-    timeThreshold: { ok: 500, warn: 1000, ouch: 3000 }, // Object|Number
-    activity: "star",     // boolean or string ("dots"|"star"|"flip"|"bouncingBar"|...)
-    emoji: true,
+    colors: 1,           // (0|false)|(1|true)|2
+    cleanStack: 3,       // Rimuovi la parte iniziale dei percorsi delle tracce stack (di default 2)
+    verbosity: 5, //{ pending: false, disabled: false, specs: true, summary: false },// (0|false)|1|2|(3|true)|4|Object
+    //timeThreshold: { ok: 500, warn: 1000, ouch: 3000 }, // Object|Number
+    listStyle: 'indent',
+    activity: true,     // boolean or string ("dots"|"star"|"flip"|"bouncingBar"|...)
+    includeSkipped:false,
+    emoji: false,
+    showSpecTiming:true,
     beep: true
 });
 
-jasmineObj.jasmine.getEnv().addReporter(reporter);
+jasmine.getEnv().addReporter(new SpecReporter({  // add jasmine-spec-reporter
+    spec: {
+        displayPending: false,
+        displayDuration:true,
+        displayErrorMessages:true,
+        displayFailed:true
+    }
+}));
+
+//jasmineObj.jasmine.getEnv().addReporter(reporter);
 
 
 
@@ -98,12 +124,40 @@ module.exports = function (grunt){
     const path = require("path");
 
 
+    const os = require('os');
+
+    const platform = os.platform();
+    console.log('Sistema operativo:', platform);
+
+    function enrichEnv(env){
+        let win32 = false;
+        let ios = false;
+        let linux= false;
+        if (platform === 'win32') {
+            win32=true;
+        } else if (platform === 'darwin') {
+            ios=true;
+        } else if (platform === 'linux') {
+            linux=true;
+        }
+        let edgeAppRoot = path.join(__dirname,'node_modules','edge-db','lib');
+        let edgeBootstrapDir = path.join(__dirname,'node_modules','edge-js','lib','bootstrap','bin','Release','net7.0');
+        //let setCmd = win32?"set":'export';
+        //let nodeconfig  =
+          //  setCmd+" DOTNET_ROOT='C:\\Program Files\\dotnet'\n "+
+            //"EDGE_BOOTSTRAP_DIR__='"+edgeBootstrapDir+"' "+
+
+        env.CORECLR_VERSION = '7.0.4';
+        env.EDGE_BOOTSTRAP_DIR__ = edgeBootstrapDir;
+        env.EDGE_APP_ROOT = edgeAppRoot;
+        env.EDGE_USE_CORECLR = 1;
+    }
+    enrichEnv(process.env);
+
     let asyncCmd = require("async-exec-cmd");
 
     // Time how long tasks take. Can help when optimizing build times
     require('time-grunt')(grunt);
-
-
     //this is used with grunt.initConfig(gruntConfig), that is equivalent to grunt.config.init
     let gruntConfig = {
         connect: {
@@ -122,13 +176,8 @@ module.exports = function (grunt){
             },
         },
 
+
         shell: {
-            startNode: {
-                command: 'node server.js'
-            },
-            stopNode: {
-                command: 'taskkill /F /IM node.exe'
-            },
             clientTest: {
                 command: 'npx jasmine test/client/*Spec.js'
             },
@@ -275,6 +324,13 @@ module.exports = function (grunt){
             server: {
                 spec_dir: "./test/spec",
                 spec_files: ["*Spec.js"],
+                reporters:["spec"],
+                reporterOptions:{
+                    "spec":{
+                        displayStacktrace: "all",
+                        "displaySuccesses":true
+                    }
+                },
                 env: jasmineEnv
             },
             midway: {
@@ -429,31 +485,33 @@ module.exports = function (grunt){
     grunt.registerTask('common unit', ['jasmine:common']);
     grunt.registerTask('server unit', ['jasmine:server']);
     grunt.registerTask("server midway", ["NodeStart", "jasmine:midway", "NodeStop"]); // , "NodeStop"
-    grunt.registerTask("server e2e", ["createSqlDB", "NodeStart", "karma:server_e2e", "destroySqlDB", "NodeStop"]);
+    grunt.registerTask("server e2e", ["createSqlDB","addUserE2e",
+                    "NodeStart", "karma:server_e2e", "destroySqlDB", "NodeStop"]);
 
     grunt.registerTask("client unit", ["karma:spec"]);
     grunt.registerTask("client midway", ["createSqlDB", "NodeStart", "karma:midway", "destroySqlDB", "NodeStop"]);
-    grunt.registerTask("client e2e", ["createSqlDB", "NodeStart",
+    grunt.registerTask("client e2e", ["createSqlDB", "addUserE2e",
+        "NodeStart",
         "karma:client_e2e", "karma:client_e2e_app",
         "destroySqlDB", "NodeStop"]);
-    grunt.registerTask("client e2e_app", ["createSqlDB", "NodeStart",
+    grunt.registerTask("client e2e_app", ["createSqlDB","addUserE2e", "NodeStart",
         "karma:client_e2e_app",
         "destroySqlDB", "NodeStop"]);
 
     grunt.registerTask('all server',
-        ['jasmine:common_server', "createSqlDB", "NodeStart",
+        ['jasmine:common_server', "createSqlDB", "addUserE2e", "NodeStart",
             "karma:server_e2e",
             "destroySqlDB",
             "jasmine:midway", //jasmine:midway crea e distrugge il db
             "NodeStop"
         ]);
     grunt.registerTask('all client', ['client unit',
-        "createSqlDB", "NodeStart",
+        "createSqlDB", "addUserE2e", "NodeStart",
         "karma:midway", "karma:client_e2e", "karma:client_e2e_app",
         "destroySqlDB", "NodeStop"]);
     grunt.registerTask("all",
         ['jasmine:common_server', "karma:spec",
-            "createSqlDB", "NodeStart",
+            "createSqlDB", "addUserE2e", "NodeStart",
             "karma:server_e2e",
             "karma:midway", "karma:client_e2e", "karma:client_e2e_app",
             "destroySqlDB",
@@ -477,9 +535,10 @@ module.exports = function (grunt){
 
     grunt.registerTask("NodeStart", "start Node server.js", function () {
         var done = this.async();
+        enrichEnv(process.env);
         asyncCmd(
             "node",
-            ["--inspect", "server.js"],
+            [inspectParameter, "server.js"],
             function (err, res, code, buffer) {
                 writeOutput(err,res,code,buffer);
 
@@ -502,6 +561,7 @@ module.exports = function (grunt){
 
     grunt.registerTask("test Client", "test client", async function () {
         let done = this.async();
+        enrichEnv(process.env);
         asyncCmd(
             "npx",
             ["jasmine", "test/client/jsDataSetSpec.js"],
@@ -568,6 +628,7 @@ module.exports = function (grunt){
     grunt.registerTask("createSqlDB","Create Sql DB",function(){
         var done = this.async();
         let doneFired = false;
+        enrichEnv(process.env);
         asyncCmd(
             "node",
             ["test/runSql",
@@ -602,6 +663,7 @@ module.exports = function (grunt){
     grunt.registerTask("destroySqlDB","Destroy Sql DB",function(){
         var done = this.async();
         let doneFired = false;
+        enrichEnv(process.env);
         asyncCmd(
             "node",
             ["test/runSql",
@@ -635,12 +697,13 @@ module.exports = function (grunt){
 
     function registerUser(DA, idflowchart, userName,  password){
         let AA = new Date().getFullYear().toString().slice(-2);
+        idflowchart = AA+idflowchart;
         let idcustomuser;
         let existed = false;
         return DA.open().then(()=>{
             return DA.selectCount(
                 {tableName:"flowchart",
-                    filter:$dq.eq("idflowchart",idflowchart)
+                    filter:$dq.eq("idflowchart",AA+idflowchart)
                 });
         }).then(
             (n)=>{
@@ -648,7 +711,7 @@ module.exports = function (grunt){
                 return DA.doSingleInsert("flowchart",
                     ["idflowchart","ayear","codeflowchart","ct","cu","lt","lu",
                         "nlevel","paridflowchart","printingorder","title"],
-                    [idflowchart,new Date().getFullYear(),'00'+idflowchart,new Date(),'setup',new Date(),'setup',
+                    [idflowchart,new Date().getFullYear(),idflowchart,new Date(),'setup',new Date(),'setup',
                         1,'0',idflowchart, 'node']
                 );
             }
@@ -677,6 +740,7 @@ module.exports = function (grunt){
                 return true;
             }
             //Associamo l'utente virtuale al gruppo di sicurezza
+            //grunt.log.writeln("adding customusergroup");
             return DA.doSingleInsert("customusergroup",
                 ["idcustomgroup","idcustomuser", "ct","cu","lt","lu"],
                 ["ORGANIGRAMMA",idcustomuser, new Date(),'setup',new Date(),'setup']);
@@ -689,6 +753,7 @@ module.exports = function (grunt){
                 return true;
             }
             //Associamo l'utente alla voce di organigramma
+            //grunt.log.writeln("adding flowchartuser");
             return DA.doSingleInsert("flowchartuser",
                 ["idcustomuser","idflowchart","ndetail", "flagdefault", "ct","cu","lt","lu"],
                 [idcustomuser,idflowchart, 1, "S",  new Date(),'setup',new Date(),'setup']);
@@ -709,6 +774,7 @@ module.exports = function (grunt){
             if (!idregistryreference){
                 idregistryreference=1;
             }
+            grunt.log.writeln("adding user to registryreference with idregistryreference = "+idregistryreference);
             return DA.doSingleInsert("registryreference",
                 ["idreg","idregistryreference", "referencename", "ct","cu","lt","lu",
                     "userweb","passwordweb","saltweb","iterweb"],
@@ -720,6 +786,23 @@ module.exports = function (grunt){
                 ]);
         }).fail(err=>grunt.log.writeln(err));
     }
+
+    function _addUser(dbCode,idFlowChart,userName,password, done){
+        DBList.getDataAccess(dbCode).then((DA) => {
+            return registerUser(DA, idFlowChart, userName, password);
+        }).then(()=>{
+            grunt.log.writeln("User "+userName+" added to db "+dbCode) ;
+            done();
+        }).fail((err) => {
+            grunt.log.writeln('Error connecting to db.' + err);
+            done();
+        });
+    }
+
+    grunt.registerTask("addUserE2e","Add user for e2e tests ",function(){
+        let done = this.async();
+        _addUser('test_sqlServer', '0001', 'user1', 'user1user1',done);
+    });
 
     grunt.registerTask("addUser","Aggiungi utente a db",function(){
         let done= this.async();
@@ -740,18 +823,18 @@ module.exports = function (grunt){
         const dbCodes = Object.keys(dbListJson);
 
 
-        function faiDomanda(index) {
+        function askQuestion(index) {
             if (index <= domande.length){
                 if (index === 0){
                     // verifica se dbCode possibile
                     rl.question(` ${domande[index]} (${dbCodes.join(', ')}): `, function (risposta){
                         if (dbCodes.includes(risposta)){
                             risposte.push(risposta);
-                            faiDomanda(index + 1);
+                            askQuestion(index + 1);
                         }
                         else{
                             console.log('Invalid db Code.');
-                            faiDomanda(index); // Richiedi la stessa domanda
+                            askQuestion(index); // Richiedi la stessa domanda
                         }
                     });
                     return;
@@ -767,19 +850,19 @@ module.exports = function (grunt){
                         risposte.pop(); // Rimuovi la penultima risposta (passwordInserita)
 
                         grunt.log.writeln('Le password non corrispondono. Inseriscile di nuovo.');
-                        faiDomanda(index - 2); // Richiedi di nuovo la domanda precedente
+                        askQuestion(index - 2); // Richiedi di nuovo la domanda precedente
                         return;
                     }
                     else {
                         //grunt.log.writeln('Le password corrispondono.');
-                        faiDomanda(index+1); //go to else section
+                        askQuestion(index+1); //go to else section
                     }
                 }
                 else{
                     //domanda normale
                     rl.question(`${domande[index]}: `, function (risposta){
                         risposte.push(risposta);
-                        faiDomanda(index + 1);
+                        askQuestion(index + 1);
                     });
                     return;
                 }
@@ -797,7 +880,7 @@ module.exports = function (grunt){
 
             }
         }
-        faiDomanda(0);
+        askQuestion(0);
     });
 
 

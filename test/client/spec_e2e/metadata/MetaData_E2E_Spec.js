@@ -139,12 +139,12 @@ describe('MetaData', function () {
                                             .then(function (row) {
                                                 expect(row).toBeDefined();
                                                 expect(row.current.idreg).toBe(1); // id chiave autoincremento calcolato
-                                                expect(row.current.idregistryreference).toBe(2); // id
+                                                expect(row.current.idregistryreference).toBe(3); // id
                                                 expect(tChild.rows.length).toBeGreaterThan(1); // riga aggiunta
                                                 expect(row.current.flagdefault).toBe("N");
                                                 expect(row.current.lu).toBe("-");
                                                 done();
-                                            })
+                                            });
 
                                     },
                                         function (err) {

@@ -61,6 +61,7 @@ function serializeSys(env){
 async function _doLogin(ctx, userName, password,
                         accountDate,sessionInfoSSO,
                         userkind, req, res){
+
     let dbInfo = DBList.getDbInfo(ctx.dbCode);
     let codeDip= dbInfo.defaultSchema; //DBDipartimento;
     let env = ctx.environment;
@@ -74,6 +75,7 @@ async function _doLogin(ctx, userName, password,
         //Searches login in virtualuser table filtering userkind and codicedipartimento
         //dt is an array of rows with a name
         let data =  await ctx.dataAccess.select({tableName:"virtualuser",filter: filter});
+
 
         if (data.length!==0 ){
             let vUser = data[0];
@@ -248,7 +250,6 @@ async function dataAllowed(ctx, newDate) {
     //     return  true; //fuori dall'organigramma
     // }
     let ayearStr = newDate.getFullYear().toString();
-
 
     let filterDateYear = q.and(q.eq("idcustomuser",idcustomuser),
         q.like("idflowchart",ayearStr.substr(2)+"%"),

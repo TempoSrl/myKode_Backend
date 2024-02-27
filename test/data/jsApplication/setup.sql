@@ -132,6 +132,10 @@ INSERT INTO [flowchart] (idflowchart,address,ayear,cap,codeflowchart,ct,cu,fax,i
 IF not exists(SELECT * FROM [flowchart] WHERE idflowchart = '232099')
 INSERT INTO [flowchart] (idflowchart,address,ayear,cap,codeflowchart,ct,cu,fax,idcity,idsor1,idsor2,idsor3,location,lt,lu,nlevel,paridflowchart,phone,printingorder,title) VALUES ('232099',null,'2023',null,'SEGADM',{ts '2023-01-09 15:47:50.303'},'setup',null,null,null,null,null,null,{ts '2023-01-09 15:47:50.303'},'setup','1','23',null,'1','Segreterie Amministratori')
 GO
+IF not exists(SELECT * FROM [flowchart] WHERE idflowchart = '242099')
+INSERT INTO [flowchart] (idflowchart,address,ayear,cap,codeflowchart,ct,cu,fax,idcity,idsor1,idsor2,idsor3,location,lt,lu,nlevel,paridflowchart,phone,printingorder,title) VALUES ('242099',null,'2024',null,'SEGADM',{ts '2023-01-09 15:47:50.303'},'setup',null,null,null,null,null,null,{ts '2023-01-09 15:47:50.303'},'setup','1','24',null,'1','Segreterie Amministratori')
+GO
+
 
 
 -- CREAZIONE TABELLA flowchartuser --

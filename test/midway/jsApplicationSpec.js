@@ -870,7 +870,7 @@ describe('rest api',
                     json:{
                         userName: userName,
                         password: password,
-                        datacontabile: (new Date(2023,12,31)).toJSON(),
+                        datacontabile: (new Date(new Date().getFullYear(),12,31)).toJSON(),
                     }
                 }, function (error, response, body){
                     if (error){
@@ -895,7 +895,7 @@ describe('rest api',
                     json: {
                         userName: userName,
                         password: password,
-                        datacontabile: (new Date(2023,12,31)).toJSON(),
+                        datacontabile: (new Date(new Date().getFullYear(),12,31)).toJSON(),
                     }
                 }, function (error, response, body){
                     if (error){

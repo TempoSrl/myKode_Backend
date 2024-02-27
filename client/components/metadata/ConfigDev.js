@@ -9,28 +9,28 @@
 
         //userName: "vis_psuma",
         //password: "vis_psuma",
-        userName: "seg_fcaprilli",
-		password: "seg_fcaprilli",
+        userName: "user1",
+		password: "user1user1",
         email : 'info@tempo.it',
         codiceFiscale : 'cf',
-        partitaIva :  '08586690961',
+        partitaIva :  '000888000888',
         cognome :  'xyzCognome',
         nome: 'xyzNome',
         dataNascita:  '02/10/1980',
 
-        // dati per login e utente per reset passoword
-        userNameResetPassword: 'riccardo2',
-        passwordResetPassword: 'riccardo2',
-        emailResetPassword: 'riccardo@treagles.it',
+        // dati per login e utente per reset password
+        userNameResetPassword: 'user2',
+        passwordResetPassword: 'user2',
+        emailResetPassword: 'user2@domain.it',
 
 
-        userName2: "riccardotest",
-        password2:"riccardotest",
-        email2 : 'info@treagles.it',
+        userName2: "user2test",
+        password2:"user2test",
+        email2 : 'info@domain.it',
         codiceFiscale2 : 'cf',
-        partitaIva2 :  '08586690961',
-        cognome2 :  'riccardotestProietti',
-        nome2: 'riccardotestNome',
+        partitaIva2 :  '000888000888',
+        cognome2 :  'surname2',
+        nome2: 'name2',
         dataNascita2:  '02/10/1980',
 
         datacontabile : new Date()

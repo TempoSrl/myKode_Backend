@@ -74,7 +74,6 @@ describe('sqlServerDriver ', function () {
             }
         };
 
-
     function getConnection(dbCode) {
         let options = _.extend({},dbInfo[dbCode]);
         if (options) {
@@ -100,7 +99,7 @@ describe('sqlServerDriver ', function () {
             masterConnTemp = new sqlServerDriver.Connection(options);
             masterConnTemp.open()
                 .then(function () {
-                    // console.log("creating db "+dbName);
+                    //console.log("creating db "+dbName);
                     return masterConnTemp.run("drop database IF EXISTS "+dbName+";\n\rcreate database "+dbName);
                 })
                 .then(function(){
@@ -150,7 +149,7 @@ describe('sqlServerDriver ', function () {
         console.log("dropping db "+dbName);
         masterConn.run("drop database IF EXISTS "+dbName)
             .then(()=>{
-                console.log("DB Dropped");
+                console.log("DB "+dbName+" Dropped");
                 masterConn.close()
                     .then(()=>{
                         // console.log("closing connection 0");

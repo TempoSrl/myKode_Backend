@@ -70,7 +70,7 @@
             var def  = Deferred("login");
             var objConn;
 
-            // distinguo 2 tipi differenti. 1. con password, 2. con session, cioè il caso di SSO
+            // distinguo 2 tipi differenti. 1. userPassword, 2. con session, cioè il caso di SSO 3. ldap
             if (type === EnumLoginType.userPassword) {
                 objConn = {
                     method: methodEnum.login,
@@ -112,7 +112,8 @@
                         // se non arriva token devo valutare sia login sso oppure ldap con registrazione abilitata
                         return def.from(self.callBackLoginWithoutToken(data));
                     },
-                    function () { //Unauthorized error
+                    function (err) { //Unauthorized error
+                        //console.log("server login method fail with ",err);
                         return def.resolve(false);
                     });
 

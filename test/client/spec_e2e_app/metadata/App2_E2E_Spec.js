@@ -31,7 +31,7 @@ describe('App2_E2E', function() {
             it('1. callPage() table:registry, editType:anagrafica" should be async and return data. -> combo filled' ,
                 function(done) {
                     var allCheckExecuted = 0;
-                    // Evento di attesa pagina caricataf
+                    // Evento di attesa pagina caricata
                     testHelper.waitEvent(appMeta.EventEnum.showPage)
                         .then(function(metaPage) {
                             allCheckExecuted++;

@@ -55,7 +55,7 @@ describe('App3_E2E', function() {
                                 allCheckExecuted++;
 
                                 // Verifico la griglia abbia 2 righe. 1 + 1 header
-                                expect($("#grid1").find("tr").length).toBe(2);
+                                expect($("#grid1").find("tr").length).toBe(3);
                                 
                                 // mi aspetto le 9 colonne che nella describeColumns del metaDato derivato sono le uniche rese visibili
                                 // "cf", "ct", "cu" vengono le caption messe a stringa vuota nel metaDato server, quindi non visibili
@@ -109,7 +109,7 @@ describe('App3_E2E', function() {
                             // N.B NON risolvo deferred della pagina così non rimane appeso, ma in questo test verrà risolto dal mainsave sul dettaglio
                             // metaPage.deferredResult.resolve();
                             // verifico la griglia abbia 5 righe. 4 + 1 header
-                            expect($("#grid1").find("tr").length).toBe(2);
+                            expect($("#grid1").find("tr").length).toBe(3);
 
                             common.pageEventWaiter(metaPage, appMeta.EventEnum.ROW_SELECT).then(function () {
                                 allCheckExecuted++;
@@ -214,7 +214,7 @@ describe('App3_E2E', function() {
                             //    verrà risolto dal mainsave sul dettaglio
                             // metaPage.deferredResult.resolve();
                             // verifico la griglia abbia 2 righe. 1 + 1 header
-                            expect($("#grid1").find("tr").length).toBe(2);
+                            expect($("#grid1").find("tr").length).toBe(3);
                             allCheckExecuted++;
                             // attendo selezione riga
                             common.pageEventWaiter(metaPage, appMeta.EventEnum.ROW_SELECT).then(function () {
@@ -326,7 +326,7 @@ describe('App3_E2E', function() {
                             // N.B NON risolvo deferred della pagina così non rimane appeso, ma in questo test verrà risolto dal mainsave sul dettaglio
                             // metaPage.deferredResult.resolve();
                             // verifico la griglia abbia 2 righe. 1 + 1 header
-                            expect($("#grid1").find("tr").length).toBe(2);
+                            expect($("#grid1").find("tr").length).toBe(3);
 
                             common.pageEventWaiter(metaPage, appMeta.EventEnum.ROW_SELECT).then(function () {
                                 allCheckExecuted++;
@@ -420,7 +420,7 @@ describe('App3_E2E', function() {
                             // metaPage.deferredResult.resolve();
                             // verifico la griglia abbia 5 righe. 4 + 1 header
                             initGridLength = $("#grid1").find("tr").length;
-                            expect(initGridLength).toBe(2);
+                            expect(initGridLength).toBe(3);
 
                             // se fossi in una situazione reale verrei da una ricerca, e poi modifica, qui invece sarei in cerca
                             //metaPage.state.setEditState();
@@ -586,7 +586,7 @@ describe('App3_E2E', function() {
 
                                         testHelper.htmlNodeByTagExists('registryreference.idregistryreference');
                                         testHelper.htmlNodeByTagValueFilled('registryreference.idregistryreference');
-                                        expect($( "input[data-tag='registryreference.idregistryreference']").val()).toBe("2");
+                                        expect($( "input[data-tag='registryreference.idregistryreference']").val()).toBe("3");
 
                                         // cambio valore di un campo, cioè effettuo l'edit
                                         valueEdit = "Title TestAppe2e";
@@ -642,7 +642,7 @@ describe('App3_E2E', function() {
                             // N.B NON risolvo deferred della pagina così non rimane appeso, ma in questo test verrà risolto dal mainsave sul dettaglio
                             // metaPage.deferredResult.resolve();
                             // verifico la griglia abbia 2 righe. 1 + 1 header
-                            expect($("#grid1").find("tr").length).toBe(2);
+                            expect($("#grid1").find("tr").length).toBe(3);
                             allCheckExecuted++;
 
                             // se fossi in una situazione reale verrei da una ricerca, e poi modifica, qui invece sarei in cerca

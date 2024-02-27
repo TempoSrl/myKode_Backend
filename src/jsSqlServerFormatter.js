@@ -2,7 +2,7 @@
 /*jslint nomen: true*/
 const _ = require('lodash');
 
-const Parser = require('jsStringParser');
+const Parser = require('./jsStringParser');
 
 /**
  * Class to be used with jsDataQuery in order to format expression for MS SQL SERVER database

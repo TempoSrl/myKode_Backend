@@ -1,8 +1,4 @@
 /*globals require */
-"use strict";
-/*
-
- */
 
 /**
  * @property defer
@@ -60,14 +56,19 @@ function EdgeConnection(connectionString, driver) {
 	this.driver = driver||'mySql';
 	this.connectionString = connectionString;
 	this.defaultTimeout= 3000;
+	//console.log("EdgeConnection.connectionString is "+connectionString);
 
-	/*references:["MySqlData.dll",
-					"System.Data.SqlClient.dll",
-					"Microsoft.Extension.Configuration.dll",
-					"System.Configuration.ConfigurationManager.dll"],*/
-	//assemblyFile:"edge-db-fake.dll",
-	//this.typeName="EdgeCompiler2";		//Startup
-	//this.methodName="CompileFunc2";	//Invoke
+	this.baseParams = {
+		assemblyFile: require('path').join(require.resolve("edge-db"),"..",  'edge-db.dll'),
+		typeName:'EdgeCompiler',
+		methodName:'CompileFunc'
+	};
+	//console.log(this.baseParams);
+		// {
+		// 	assemblyFile: require('path').join(require.resolve("edge-db"),"..",  'QuickStart.Core.dll'),
+		// 	typeName:'QuickStart.Core.EdgeCompiler',
+		// 	methodName:'CompileFunc'
+		// };
 
 }
 
@@ -90,6 +91,10 @@ function simpleObjectifier(colNames, row) {
 }
 
 
+/*
+
+
+ */
 
 /**
  * Evaluates parameter to connect to database depending on the open/closed state of the connection.
@@ -97,11 +102,11 @@ function simpleObjectifier(colNames, row) {
  * @private
  * @returns {*}
  */
-EdgeConnection.prototype.getDbConn = function () {
+EdgeConnection.prototype.getDbConn = function (obj) {
 	if (this.edgeHandler !== null) {
-		return {handler: this.edgeHandler, driver: this.driver};
+		return _.assign(obj,{handler: this.edgeHandler, driver: this.driver});
 	}
-	return {connectionString: this.connectionString, driver: this.driver};
+	return _.assign(obj,{connectionString: this.connectionString, driver: this.driver});
 };
 
 
@@ -113,43 +118,40 @@ EdgeConnection.prototype.getDbConn = function () {
  */
 EdgeConnection.prototype.open = function () {
 	const def = defer(),
-		that = this,
-		edge      = require('edge-js'),
-		/**
-		 * Opens the phisical connection
-		 * @method edgeOpenInternal
-		 * @private
-		 * @returns {promise}
-		 */
-		edgeOpenInternal = edge.func(this.sqlCompiler,
-			{
-				source: 'open',
-				connectionString: this.connectionString,
-				cmd: 'open',
-				driver: this.driver,
-				/*references:["MySqlData.dll",
-					"System.Data.SqlClient.dll",
-					"Microsoft.Extension.Configuration.dll",
-					"System.Configuration.ConfigurationManager.dll"],*/
-				//assemblyFile:"edge-db-fake.dll",
-				//typeName:"EdgeCompiler",		//Startup
-				//methodName:"CompileFunc"	//Invoke
-			});
-	edgeOpenInternal({}, function (error, result) {
-		if (error) {
-			//console.log(error);
-			def.reject(error);
-			return;
-		}
-		if (result) {
-			//console.log("got handler "+result+" for "+that.connectionString);
-			that.edgeHandler = result;
-			def.resolve();
-			return;
-		}
-		console.log("shouldn't reach here");
-		def.reject("shouldn't reach here");
-	});
+	that = this;
+	/**
+	 * Opens the physical connection
+	 * @method edgeOpenInternal
+	 * @private
+	 * @returns {promise}
+	 */
+	let edgeOpenInternal= edge.func(this.baseParams);
+
+	try{
+		edgeOpenInternal({
+			source: 'open',
+			connectionString: this.connectionString,
+			cmd: 'open',
+			driver: this.driver
+		}, function (error, result){
+			if (error){
+				//console.log(error);
+				def.reject(error);
+				return;
+			}
+			if (result){
+				//console.log("got handler "+result+" for "+that.connectionString);
+				that.edgeHandler = result;
+				def.resolve();
+				return;
+			}
+			console.log("shouldn't reach here");
+			def.reject("shouldn't reach here");
+		});
+	}
+	catch(e){
+		def.reject(e);
+	}
 	return def.promise();
 };
 
@@ -160,24 +162,21 @@ EdgeConnection.prototype.open = function () {
  */
 EdgeConnection.prototype.close = function () {
 	let def = defer(),
-		that = this,
-		edge      = require('edge-js');
+		that = this;
 
 	if (this.edgeHandler===null) {
-		//console.log("an EdgeConnection was found without an handler");
 		def.resolve();
 		return def;
 	}
 	//console.log("closing  handler "+this.edgeHandler+" for "+this.connectionString);
-	let	edgeClose = edge.func(this.sqlCompiler,
-		{
-			handler: this.edgeHandler,
-			source: 'close',
-			cmd: 'close',
-			driver: this.driver
-		});
+	let	edgeClose = edge.func(this.baseParams);
 
-	edgeClose({}, function (error) {
+	edgeClose({
+		handler: this.edgeHandler,
+		source: 'close',
+		cmd: 'close',
+		driver: this.driver
+	}, function (error) {
 		if (error) {
 			//console.log("error closing handler "+that.edgeHandler+" for "+that.connectionString+":"+error);
 			def.reject(error);
@@ -190,6 +189,8 @@ EdgeConnection.prototype.close = function () {
 	return def.promise();
 };
 
+
+
 let nCommand =0;
 /**
  * Executes a sql command and returns all sets of results. Each Results is given via a notify or resolve
@@ -200,8 +201,7 @@ let nCommand =0;
  * @returns {Promise}  a sequence of {[array of plain objects]} or {meta:[column names],rows:[arrays of raw data]}
  */
 EdgeConnection.prototype.queryBatch = function (query, raw, timeout) {
-	let edge      = require('edge-js'),
-		edgeQuery = edge.func(this.sqlCompiler, _.assign({source: query,timeout:timeout||this.defaultTimeout}, this.getDbConn())),
+	let edgeQuery = edge.func(this.baseParams),
 		def = defer();
 	//nextTick is necessary in order to run the sql function asynchronously, otherwise, cause of edge-js
 	//  and mysql blocking nature, it starts notifying tables before the promise is actually returned
@@ -215,7 +215,9 @@ EdgeConnection.prototype.queryBatch = function (query, raw, timeout) {
 		// if (that.edgeHandler === null) {
 		// 	console.log("executing command  " + cc + "(" + that.edgeHandler + "):" + query);
 		// }
-		edgeQuery({}, function (error, result) {
+		edgeQuery(that.getDbConn({source: query,
+			timeout:timeout||that.defaultTimeout
+			}), function (error, result) {
 			// console.log("receiving result  "+cc+"("+that.edgeHandler+")");
 			// console.log(result);
 			if (error) {
@@ -258,10 +260,12 @@ EdgeConnection.prototype.queryBatch = function (query, raw, timeout) {
  */
 EdgeConnection.prototype.updateBatch = function (query,timeout) {
 	let  edge      = require('edge-js'),
-		edgeQuery = edge.func(this.sqlCompiler, _.assign({source: query, cmd: 'nonquery',timeout:timeout||this.defaultTimeout},
-			this.getDbConn())),
+		edgeQuery = edge.func(this.baseParams),
 		def = defer();
-	edgeQuery({}, function (error, result) {
+	edgeQuery(this.getDbConn({source: query,
+		cmd: 'nonquery',
+		timeout:timeout||this.defaultTimeout
+	}), function (error, result) {
 		if (error) {
 			def.reject(error);
 			return;
@@ -313,19 +317,25 @@ EdgeConnection.prototype.queryLines = function (query, raw,timeout) {
 			if (extCallback)extCallback();
 			return {};
 		},
-		edge      = require('edge-js'),
-		edgeQuery = edge.func(this.sqlCompiler,
-			_.assign({source: query, callback: callback, packetSize: 1,timeout:timeout||this.defaultTimeout},
-				this.getDbConn()));
+		edgeQuery = edge.func(this.baseParams);
+	let that = this;
+
 	process.nextTick(function() {
 		//console.log("queryLines "+query);
-		edgeQuery({}, function (error, result) {
-			if (error) {
-				def.reject(error + ' running ' + query);
-				return;
+		edgeQuery(that.getDbConn({source: query,
+			packetSize: 1,
+			callback:callback,
+			timeout:timeout||that.defaultTimeout}),
+
+			function (error, result) {
+				if (error) {
+					def.reject(error + ' running ' + query);
+					return;
+				}
+				return {};
 			}
-			return {};
-		});
+
+		);
 	});
 	return def.promise();
 };
@@ -388,26 +398,26 @@ EdgeConnection.prototype.queryPackets = function (query, raw, packSize, timeout)
 			return {};
 		};
 	let that = this;
-	//nextTick is necessary in order to run the sql function asyncronously, otherwise, cause of edge-js
+	//nextTick is necessary in order to run the sql function asynchronously, otherwise, cause of edge-js
 	//  and mysql blocking nature, it starts notifying tables before the promise is actually returned
 	//   causing data to be loss
 	process.nextTick(function () {
-		//console.log("queryPackets "+query);
-		let edge      = require('edge-js'),
-			edgeQuery = edge.func(that.sqlCompiler, _.assign({source: query,
-					callback: callback,
-					timeout:timeout||that.defaultTimeout,
-					packetSize: packetSize},
-				that.getDbConn()));
+		let edgeQuery = edge.func(that.baseParams);
 
-		edgeQuery({}, function (error) {
-			if (error) {
-				//console.log("error "+error+" running "+query);
-				def.reject(error + ' running ' + query);
-				return def.promise();
+		edgeQuery(that.getDbConn({source: query,
+				callback: callback,
+			timeout:timeout||that.defaultTimeout,
+			packetSize: packetSize
+		},
+			function (error){
+				if (error){
+					//console.log("error "+error+" running "+query);
+					def.reject(error + ' running ' + query);
+					return def.promise();
+				}
 			}
 			//def.resolve();
-		});
+		));
 	});
 	return def.promise();
 };
@@ -423,6 +433,7 @@ EdgeConnection.prototype.queryPackets = function (query, raw, packSize, timeout)
  * @returns {*}
  */
 EdgeConnection.prototype.run = function (script,timeout) {
+	//console.log("running script:\n"+script);
 	let os = require('os'),
 		//noinspection JSUnresolvedVariable
 		lines = script.split(os.EOL),
@@ -455,19 +466,20 @@ EdgeConnection.prototype.run = function (script,timeout) {
 	let def = defer(),
 		index = 0;
 
-
+	let lastBlock='none';
 	function loopScript() {
 		if (index === blocks.length) {
 			def.resolve();
 		} else {
-			//console.log(blocks[index]);
+			//console.log('running block:'+blocks[index]);
+			lastBlock = blocks[index];
 			that.updateBatch(blocks[index],timeout||that.defaultTimeout)
 			.done(function () {
 				index += 1;
 				loopScript();
 			})
 			.fail(function (err) {
-				console.log(err+" running "+blocks[index]);
+				console.log(err+" running "+lastBlock);
 				def.reject(err);
 			});
 		}

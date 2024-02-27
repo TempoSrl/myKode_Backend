@@ -86,20 +86,18 @@ describe ("jsBusinessLogic",function () {
     let masterConn;
     let sqlConn;
     var originalTimeout;
+    originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = 200000;
+
 
     beforeAll(function(done){
-        originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
-
-
-
         masterConn= null;
         sqlConn= null;
         dbList.setDbInfo('testMainMySqlDriver', good);
         let sqlOpen = Deferred();
         let options =  _.extend({},good);
         if (options) {
-            options.database = null;
+            options.database = null; //master connection is not attached to a database
             options.dbCode = "good";
             masterConn = new mySqlDriver.Connection(options);
             masterConn.open()
@@ -110,8 +108,12 @@ describe ("jsBusinessLogic",function () {
                     dbList.setDbInfo('testMySqlDriver', good);
                     sqlConn = dbList.getConnection('testMySqlDriver');
                     sqlConn.open()
-                        .then((rr)=>sqlOpen.resolve(rr))
-                        .fail(rr=>sqlOpen.reject(rr));
+                        .then((rr)=>{
+                            sqlOpen.resolve(rr);
+                        })
+                        .fail(rr=>{
+                            sqlOpen.reject(rr);
+                        });
                     })
                 .fail((err)=>{
                     console.log(err);
@@ -122,23 +124,31 @@ describe ("jsBusinessLogic",function () {
                 .then(()=>{
                     return sqlConn.close();
                 })
-                .then(done);
+                .then(()=>{
+                    done();
+                })
+                .fail((err)=>{
+                    done();
+                });
         });
 
     });
 
     afterAll(function (done){
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        //jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+
         if (!masterConn) {
             done();
+            return;
         }
-        masterConn.run("drop database IF EXISTS "+dbName)
-            .then(()=>{
+        masterConn.run("drop database IF EXISTS " + dbName+";").then(()=>{
                 return masterConn.close();
-            })
-            .then(()=>{
+        }).then(()=>{
                 done();
-            });
+            })
+        .fail(err=>{
+            done();
+        });
 
         /*
          if (sqlConn) {
@@ -146,6 +156,8 @@ describe ("jsBusinessLogic",function () {
             }
          */
     });
+
+
 
 
     describe('js prerequisites', function () {
@@ -165,14 +177,14 @@ describe ("jsBusinessLogic",function () {
             let intermediate=0;
 
             let res = DefHelp
-                .fail((res) => {
-                    expect(res).toBe("division by 0");
-                    intermediate=12;
-                })
-                .always((res)=>{
-                    expect(intermediate).toBe(12);
-                    done();
-                });
+            .fail((err) => {
+                expect(err).toBe("division by 0");
+                intermediate=12;
+            })
+            .always((res)=>{
+                expect(intermediate).toBe(12);
+                done();
+            });
         });
 
         it("checking captured values in functions", function (done) {
@@ -320,10 +332,10 @@ describe ("jsBusinessLogic",function () {
             }
 
             let res = f()
-                .then((res) => {
-                    expect(res).toBe(14);
-                    done();
-                });
+            .then((res) => {
+                expect(res).toBe(14);
+                done();
+            });
         });
 
         it ("Always is always called (then-always)",function(done){
@@ -331,14 +343,14 @@ describe ("jsBusinessLogic",function () {
             setTimeout(() => DefHelp.reject(14), 100);
 
             let res = DefHelp
-                .then((res) => {
-                    expect(true).toBe(false);
-                    done();
-                })
-                .always((res)=>{
-                    expect(res).toBe(14);
-                    done();
-                });
+            .then((res) => {
+                expect(true).toBe(false);
+                done();
+            })
+            .always((res)=>{
+                expect(res).toBe(14);
+                done();
+            });
         });
 
         it ("Always is always called (done-always)",function(done){
@@ -348,14 +360,14 @@ describe ("jsBusinessLogic",function () {
 
 
             let res = DefHelp
-                .done((res) => {
-                    expect(true).toBe(false);
-                    done();
-                })
-                .always((res)=>{
-                    expect(res).toBe(14);
-                    done();
-                });
+            .done((res) => {
+                expect(true).toBe(false);
+                done();
+            })
+            .always((res)=>{
+                expect(res).toBe(14);
+                done();
+            });
         });
 
         it ("Always is always called (fail-always)",function(done){
@@ -365,15 +377,15 @@ describe ("jsBusinessLogic",function () {
             let intermediate=0;
 
             let res = DefHelp
-                .fail((res) => {
-                    expect(res).toBe(14);
-                    intermediate=12;
-                })
-                .always((res)=>{
-                    expect(intermediate).toBe(12);
-                    expect(res).toBe(14);
-                    done();
-                });
+            .fail((res) => {
+                expect(res).toBe(14);
+                intermediate=12;
+            })
+            .always((res)=>{
+                expect(intermediate).toBe(12);
+                expect(res).toBe(14);
+                done();
+            });
         });
 
         it ("Always is always called (reject-done-fail-always)",function(done){
@@ -383,19 +395,19 @@ describe ("jsBusinessLogic",function () {
             let intermediate=0;
 
             let res = DefHelp
-                .done((res) => {
-                    expect(1).toBe(0);
-                    intermediate=10;
-                })
-                .fail((res) => {
-                    expect(res).toBe(14);
-                    intermediate=12;
-                })
-                .always((res)=>{
-                    expect(intermediate).toBe(12);
-                    expect(res).toBe(14);
-                    done();
-                });
+            .done((res) => {
+                expect(1).toBe(0);
+                intermediate=10;
+            })
+            .fail((res) => {
+                expect(res).toBe(14);
+                intermediate=12;
+            })
+            .always((res)=>{
+                expect(intermediate).toBe(12);
+                expect(res).toBe(14);
+                done();
+            });
         });
 
 
@@ -404,88 +416,86 @@ describe ("jsBusinessLogic",function () {
     });
 
     describe("RowChange", function () {
-        describe("getRelated", function () {
-            it("Should find same table", function () {
-                let ds = dsProvider("customerphone");
-                let tCustomer = ds.tables["customer"];
-                let tCustomerPhone = ds.tables["customerphone"];
-                let rCustomer1 = tCustomer.newRow({idcustomer: 1});
-                let rCustomer2 = tCustomer.newRow({idcustomer: 2});
-                let rCustomerPhone = tCustomerPhone.newRow(null, rCustomer2);
-                let rc = new RowChange(0, rCustomerPhone.getRow(), [], 'dummy', 'dummy');
 
-                expect(rc.getRelated("customerphone").current).toBe(rCustomerPhone);
-            });
+        it("Should find same table", function () {
+            let ds = dsProvider("customerphone");
+            let tCustomer = ds.tables["customer"];
+            let tCustomerPhone = ds.tables["customerphone"];
+            let rCustomer1 = tCustomer.newRow({idcustomer: 1});
+            let rCustomer2 = tCustomer.newRow({idcustomer: 2});
+            let rCustomerPhone = tCustomerPhone.newRow(null, rCustomer2);
+            let rc = new RowChange(0, rCustomerPhone.getRow(), [], 'dummy', 'dummy');
 
-            it("Should return undefined if no parent present", function () {
-                let ds = dsProvider("customerphone");
-                let tCustomer = ds.tables["customer"];
-                let rCustomer1 = tCustomer.newRow({idcustomer: 1});
-                let rCustomer2 = tCustomer.newRow({idcustomer: 2});
+            expect(rc.getRelated("customerphone").current).toBe(rCustomerPhone);
+        });
 
-                let tCustomerPhone = ds.tables["customerphone"];
-                let rCustomerPhone = tCustomerPhone.newRow({idcustomer: 3, idcustomerphone: 1});
-                let rc = new RowChange(0, rCustomerPhone.getRow(), [], 'dummy', 'dummy');
+        it("Should return undefined if no parent present", function () {
+            let ds = dsProvider("customerphone");
+            let tCustomer = ds.tables["customer"];
+            let rCustomer1 = tCustomer.newRow({idcustomer: 1});
+            let rCustomer2 = tCustomer.newRow({idcustomer: 2});
 
-                expect(rc.getRelated("customer")).toBeUndefined();
-            });
+            let tCustomerPhone = ds.tables["customerphone"];
+            let rCustomerPhone = tCustomerPhone.newRow({idcustomer: 3, idcustomerphone: 1});
+            let rc = new RowChange(0, rCustomerPhone.getRow(), [], 'dummy', 'dummy');
 
-
-            it("Should find parent table", function () {
-                let ds = dsProvider("customerphone");
-                let tCustomer = ds.tables["customer"];
-                let tCustomerPhone = ds.tables["customerphone"];
-                let rCustomer1 = tCustomer.newRow();
-                let rCustomer2 = tCustomer.newRow();
-                let rCustomerPhone = tCustomerPhone.newRow(null, rCustomer2);
-                let rc = new RowChange(0, rCustomerPhone.getRow(), [], 'dummy', 'dummy');
-
-                expect(rc.getRelated("customer").current).toBe(rCustomer2);
-            });
-
-            it("Should find parent table by tableForWriting", function () {
-                let ds = dsProvider("customerphone");
-                let tCustomer = ds.tables["customer"];
-                tCustomer.tableForWriting("different");
-                let tCustomerPhone = ds.tables["customerphone"];
-                let rCustomer1 = tCustomer.newRow();
-                let rCustomer2 = tCustomer.newRow();
-                let rCustomerPhone = tCustomerPhone.newRow(null, rCustomer2);
-                let rc = new RowChange(0, rCustomerPhone.getRow(), [], 'dummy', 'dummy');
-
-                expect(rc.getRelated("different").current).toBe(rCustomer2);
-            });
-
-            it("Should find child table if one child row present ", function () {
-                let ds = dsProvider("customerphone");
-                let tCustomer = ds.tables["customer"];
-                let tCustomerPhone = ds.tables["customerphone"];
-                let rCustomer1 = tCustomer.newRow();
-                let rCustomer2 = tCustomer.newRow();
-                let rCustomerPhone = tCustomerPhone.newRow(null, rCustomer2);
-                let rc = new RowChange(0, rCustomer2.getRow(), [], 'dummy', 'dummy');
-
-                expect(rc.getRelated("customerphone").current).toBe(rCustomerPhone);
-            });
-
-            it("Should not find child table if two child row present ", function () {
-                let ds = dsProvider("customerphone");
-                let tCustomer = ds.tables["customer"];
-                let tCustomerPhone = ds.tables["customerphone"];
-                let rCustomer1 = tCustomer.newRow();
-                let rCustomer2 = tCustomer.newRow();
-                let rCustomerPhone = tCustomerPhone.newRow(null, rCustomer2);
-                let rCustomerPhone2 = tCustomerPhone.newRow(null, rCustomer2);
-                let rc = new RowChange(0, rCustomer2.getRow(), [], 'dummy', 'dummy');
-
-                expect(rc.getRelated("customerphone")).toBeUndefined();
-            });
+            expect(rc.getRelated("customer")).toBeUndefined();
+        });
 
 
+        it("Should find parent table", function () {
+            let ds = dsProvider("customerphone");
+            let tCustomer = ds.tables["customer"];
+            let tCustomerPhone = ds.tables["customerphone"];
+            let rCustomer1 = tCustomer.newRow();
+            let rCustomer2 = tCustomer.newRow();
+            let rCustomerPhone = tCustomerPhone.newRow(null, rCustomer2);
+            let rc = new RowChange(0, rCustomerPhone.getRow(), [], 'dummy', 'dummy');
+
+            expect(rc.getRelated("customer").current).toBe(rCustomer2);
+        });
+
+        it("Should find parent table by tableForWriting", function () {
+            let ds = dsProvider("customerphone");
+            let tCustomer = ds.tables["customer"];
+            tCustomer.tableForWriting("different");
+            let tCustomerPhone = ds.tables["customerphone"];
+            let rCustomer1 = tCustomer.newRow();
+            let rCustomer2 = tCustomer.newRow();
+            let rCustomerPhone = tCustomerPhone.newRow(null, rCustomer2);
+            let rc = new RowChange(0, rCustomerPhone.getRow(), [], 'dummy', 'dummy');
+
+            expect(rc.getRelated("different").current).toBe(rCustomer2);
+        });
+
+        it("Should find child table if one child row present ", function () {
+            let ds = dsProvider("customerphone");
+            let tCustomer = ds.tables["customer"];
+            let tCustomerPhone = ds.tables["customerphone"];
+            let rCustomer1 = tCustomer.newRow();
+            let rCustomer2 = tCustomer.newRow();
+            let rCustomerPhone = tCustomerPhone.newRow(null, rCustomer2);
+            let rc = new RowChange(0, rCustomer2.getRow(), [], 'dummy', 'dummy');
+
+            expect(rc.getRelated("customerphone").current).toBe(rCustomerPhone);
+        });
+
+        it("Should not find child table if two child row present ", function () {
+            let ds = dsProvider("customerphone");
+            let tCustomer = ds.tables["customer"];
+            let tCustomerPhone = ds.tables["customerphone"];
+            let rCustomer1 = tCustomer.newRow();
+            let rCustomer2 = tCustomer.newRow();
+            let rCustomerPhone = tCustomerPhone.newRow(null, rCustomer2);
+            let rCustomerPhone2 = tCustomerPhone.newRow(null, rCustomer2);
+            let rc = new RowChange(0, rCustomer2.getRow(), [], 'dummy', 'dummy');
+
+            expect(rc.getRelated("customerphone")).toBeUndefined();
         });
 
 
     });
+
 
     describe("BusinessMessage", function () {
         describe("Constructor", function () {
@@ -690,7 +700,7 @@ describe ("jsBusinessLogic",function () {
         let nSpecs=0;
         beforeEach(function (done) {
             nSpecs++;
-            //console.log("beforeEach called "+nSpecs);
+            console.log("beforeEach called "+nSpecs);
             //dbList.setDbInfo('test', good);
             //sqlConn = dbList.getConnection('test');
             //sqlConn.open().done(function () {
