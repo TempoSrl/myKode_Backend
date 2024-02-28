@@ -1,6 +1,6 @@
 {
   "name": "jsmetabackend",
-  "version": "1.0.50",
+  "version": "1.0.51",
   "description": "Backend js Framework",
   "main": "index.js",
   "scripts": {
@@ -15,7 +15,7 @@
     "body-parser": "^1.19.0",
     "brfs": "^2.0.2",
     "crypto-js": "^4.1.1",
-    "edge-db": "github:gaelazzo/edge-db",
+    "edge-db-core": "^1.0.7",
     "edge-js": "^20.10.2",
     "express": "^4.17.1",
     "express-async-handler": "^1.1.4",
@@ -45,7 +45,7 @@
     "grunt-wiredep": "^3.0.1",
     "jasmine": "^4.5.0",
     "jasmine-collection-matchers": "*",
-    "jasmine-console-reporter":"3.1.0",
+    "jasmine-console-reporter": "3.1.0",
     "jasmine-core": "3.6.0",
     "jasmine-node": "^3.0.0",
     "jasmine-spec-reporter": "^7.0.0",

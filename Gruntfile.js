@@ -140,7 +140,7 @@ module.exports = function (grunt){
         } else if (platform === 'linux') {
             linux=true;
         }
-        let edgeAppRoot = path.join(__dirname,'node_modules','edge-db','lib');
+        let edgeAppRoot = path.join(__dirname,'node_modules','edge-db-core','lib',platform);
         let edgeBootstrapDir = path.join(__dirname,'node_modules','edge-js','lib','bootstrap','bin','Release','net7.0');
         //let setCmd = win32?"set":'export';
         //let nodeconfig  =

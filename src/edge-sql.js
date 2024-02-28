@@ -9,7 +9,7 @@ const _         = require('lodash');
 const edge = require("edge-js");
 const os = require("os");
 const isolationLevels=['READ_UNCOMMITTED','READ_COMMITTED','REPEATABLE_READ','SNAPSHOT','SERIALIZABLE'];
-
+const platform = os.platform();
 
 module.exports = {
 	isolationLevels: isolationLevels,
@@ -59,11 +59,10 @@ function EdgeConnection(connectionString, driver) {
 	//console.log("EdgeConnection.connectionString is "+connectionString);
 
 	this.baseParams = {
-		assemblyFile: require('path').join(require.resolve("edge-db"),"..",  'edge-db.dll'),
+		assemblyFile: require('path').join(require.resolve("edge-db-core"),"..", platform, 'edge-db.dll'),
 		typeName:'EdgeCompiler',
 		methodName:'CompileFunc'
 	};
-	//console.log(this.baseParams);
 		// {
 		// 	assemblyFile: require('path').join(require.resolve("edge-db"),"..",  'QuickStart.Core.dll'),
 		// 	typeName:'QuickStart.Core.EdgeCompiler',
