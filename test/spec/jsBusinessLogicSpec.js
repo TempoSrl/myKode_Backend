@@ -699,8 +699,6 @@ describe ("jsBusinessLogic",function () {
 
         let nSpecs=0;
         beforeEach(function (done) {
-            nSpecs++;
-            console.log("beforeEach called "+nSpecs);
             //dbList.setDbInfo('test', good);
             //sqlConn = dbList.getConnection('test');
             //sqlConn.open().done(function () {

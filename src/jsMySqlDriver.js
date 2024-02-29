@@ -196,6 +196,7 @@ function Connection(options) {
                 ";IntegratedSecurity=yes;uid=auth_windows" :
                 ";uid=" + this.opt.user + ";pwd=" + this.opt.pwd) +
             ";Pooling=False" +
+            (this.opt.port ? (";port=" + this.opt.port) : "") +
             ";Connection Timeout=" + this.timeOut +
             ";Allow User Variables=True;";
     }

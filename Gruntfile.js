@@ -147,7 +147,7 @@ module.exports = function (grunt){
           //  setCmd+" DOTNET_ROOT='C:\\Program Files\\dotnet'\n "+
             //"EDGE_BOOTSTRAP_DIR__='"+edgeBootstrapDir+"' "+
 
-        env.CORECLR_VERSION = '7.0.4';
+        //env.CORECLR_VERSION = '7.0.4';
         env.EDGE_BOOTSTRAP_DIR__ = edgeBootstrapDir;
         env.EDGE_APP_ROOT = edgeAppRoot;
         env.EDGE_USE_CORECLR = 1;

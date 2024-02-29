@@ -54,52 +54,54 @@ describe('edgeSql ', function () {
          */
         dbInfo = {
             good: {
-                server: "localhost",
+                server: dbConfig.server,
                 useTrustedConnection: false,
                 user: dbConfig.user,
                 pwd: dbConfig.pwd,
-                database: null
+                database: null,
+                port:dbConfig.port
             },
             bad: {
-                server: "localhost",
+                server: dbConfig.server,
                 useTrustedConnection: false,
                 user: dbConfig.user,
-                pwd: "x",
-                database: null
+                pwd: dbConfig.pwd+'aa',
+                database: null,
+                port:dbConfig.port
             }
         };
         dbInfo.database = dbName;
 
         dbInfoConnectionString = {
-            good: "data source=localhost;initial catalog="+dbName+";User ID ="+dbConfig.user+";Password="+dbConfig.pwd+";" +
-                "Pooling=False;Connection Timeout=600;",
-            bad: "data source=localhost;initial catalog="+dbName+";User ID ="+dbConfig.user+";Password=x;" +
-                "Pooling=False;Connection Timeout=600;"
+            good: "data source="+dbConfig.server+";initial catalog="+dbName+";User ID ="+dbConfig.user+";Password="+dbConfig.pwd+";" +
+                "Pooling=False;Connection Timeout=600;"+(dbConfig.port?"port="+dbConfig.port+";":""),
+            bad: "data source="+dbConfig.server+";initial catalog="+dbName+";User ID ="+dbConfig.user+";Password=x;" +
+                "Pooling=False;Connection Timeout=600;"+(dbConfig.port?"port="+dbConfig.port+";":""),
         };
         driver = 'sqlServer';
     }
     else {
         dbInfo = {
             good: {
-                server: "localhost",
+                server: dbConfig.server,
                 useTrustedConnection: false,
-                user: "user1",
-                pwd: "user1user1",
+                user: dbConfig.user,
+                pwd: dbConfig.pwd,
                 database: null
             },
             bad: {
-                server: "localhost",
+                server: dbConfig.server,
                 useTrustedConnection: false,
-                user: "user1",
-                pwd: "x",
+                user: dbConfig.user,
+                pwd: dbConfig.pwd+"x",
                 database: null
             }
         };
 
         dbInfoConnectionString = {
-            good: "Server=localhost;database="+dbName+";uid="+dbConfig.user+";pwd="+dbConfig.pwd+";" +
+            good: "Server="+dbConfig.server+";database="+dbName+";uid="+dbConfig.user+";pwd="+dbConfig.pwd+";" +
                 "Pooling=False;Connection Timeout=600;Allow User Variables=True;",
-            bad: "Server=localhost;database="+dbName+";uid="+dbConfig.user+";pwd=x;" +
+            bad: "Server="+dbConfig.server+";database="+dbName+";uid="+dbConfig.user+";pwd=x;" +
                 "Pooling=False;Connection Timeout=600;Allow User Variables=True;" //
         };
         driver = 'mySql';

@@ -54,7 +54,8 @@ const dbInfo = {
         user: dbConfig.user,
         pwd: dbConfig.pwd,
         database: dbConfig.database,
-        sqlModule: 'jsMySqlDriver'
+        sqlModule: 'jsMySqlDriver',
+        port:dbConfig.port
     },
     bad: {
         server: dbConfig.server,
@@ -62,7 +63,8 @@ const dbInfo = {
         user: dbConfig.user,
         pwd: dbConfig.pwd + 'AA',
         database: dbConfig.database,
-        sqlModule: 'jsMySqlDriver'
+        sqlModule: 'jsMySqlDriver',
+        port:dbConfig.port
     }
 };
 
