@@ -19,19 +19,27 @@ const driverClass = require(path.join("..","src",driverKind));
 
 let dbConn = new driverClass.Connection(dbConfig);
 let stop=false;
-
+let error = false;
 dbConn.open().done(function (){
-    console.log("running script "+scriptName+
+    process.stdout.write("running script "+scriptName+
         " on db "+dbConfig.database+
         " server "+dbConfig.server+
         "("+driverKind+")");
     dbConn.run(fs.readFileSync(scriptName).toString()).then((res,err)=>{
-        if (err) console.log(err);
         stop=true;
+        if (err) {
+            process.stdout.write("Error:"+err+"\n");
+            return;
+        }
     }).fail((err)=>{
-        console.log(err);
+        error=true;
+        process.stderr.write(" - Error:"+err+"\n");
         stop=true;
+    }).done(()=>{
+        dbConn.close();
+        if(!error)process.stdout.write(".. Ok\n");
     });
+
 
     // start polling at an interval until the data is found at the global
     let intvl = setInterval(function() {

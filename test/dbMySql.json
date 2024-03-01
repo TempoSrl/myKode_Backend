@@ -1,7 +1,7 @@
 {
-    "server": "mysql.temposrl.com",
+    "server": "localhost",
     "database": "test",
-    "user": "assistenza",
-    "pwd": "123*Lodeserto",
+    "user": "user1",
+    "pwd": "user1user1",
     "sqlModule": "jsMySqlDriver"
 }

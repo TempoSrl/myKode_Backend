@@ -14,7 +14,7 @@ const FormData = require('form-data');
 const fs = require("fs");
 const q = require('../../client/components/metadata/jsDataQuery');
 const jsDataSet = require("../../client/components/metadata/jsDataSet");
-const getDataUtils = require("../../client/components/metadata/getDataUtils");
+const getDataUtils = require("../../client/components/metadata/GetDataUtils");
 const configName = path.join('config', 'dbList.json');
 const GetMeta = require("./../../client/components/metadata/GetMeta");
 

@@ -1,4 +1,4 @@
-const Deferred = require("jQDeferred");
+const Deferred = require("JQDeferred");
 const _ = require('lodash');
 
 const Q = require('./../client/components/metadata/jsDataQuery');

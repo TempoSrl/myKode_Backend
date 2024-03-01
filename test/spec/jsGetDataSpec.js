@@ -148,7 +148,8 @@ describe("jsGetData",function() {
 
         beforeEach(function (done) {
             dsCustomer = dataSetProvider('customer', 'default');
-            getContext('testGetData', 'nino', 'default', '2014', new Date(2014, 1, 20, 10, 10, 10, 0))
+            getContext('testGetData', 'nino', 'default', '2014',
+                new Date(2014, 1, 20, 10, 10, 10, 0))
                 .then(function (res) {
                     ctx = res;
                     //console.log("to open beforeEach "+ ctx.dataAccess);

@@ -17,7 +17,7 @@ const logType = require('./Logger').logTypeEnum;
 const model = require('./MetaModel').metaModel;
 const _ = require('lodash');
 const utils = require("./utils").utils;
-const mSel = require('./../../../src/jsMultiselect');
+const mSel = require('./../../../src/jsMultiSelect');
 const Select = mSel.Select;
 
 const GetDataSet = require("./GetDataSet");
