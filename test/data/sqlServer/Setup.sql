@@ -21,9 +21,9 @@ DECLARE @i int;
 SET @i = 1;
 while @i < 500 BEGIN
  insert into customer(idcustomer,name,age,birth,surname,stamp,random,curr) values(
-			 @i, 		 concat('name',convert(VARCHAR(10),@i) ),
-			10+@i,		'2010-24-09 12:27:38',
-			concat('surname_',convert(VARCHAR(10),@i*2+100000)),
+			 @i, 		 CONCAT('name',CONVERT(VARCHAR(10),@i) ),
+			10+@i,		 '2010-09-24T12:27:38',
+			CONCAT('surname_',CONVERT(VARCHAR(10),@i*2+100000)),
 			GETDATE(),
 			RAND()*1000,
 			RAND()*10000 );
@@ -66,9 +66,9 @@ set @i=1;
 while (@i<600) BEGIN
 insert into seller (idseller,name,age,birth,surname,stamp,random,curr,rtf,cf) values(
 			 @i,
-			 concat('name',convert(varchar(10),@i)	)	,10+@i,
-			'2010-24-02 12:27:38',
-			concat('surname_',convert(varchar(10),@i*2+100000)),
+			 CONCAT('name',CONVERT(VARCHAR(10),@i)	)	,10+@i,
+			 '2010-02-24T12:27:38',
+			CONCAT('surname_',CONVERT(VARCHAR(10),@i*2+100000)),
 			GETDATE(),
 			RAND()*1000,
 			RAND()*10000,
@@ -110,7 +110,7 @@ set @i=0;
 while (@i<20) BEGIN
 insert into sellerkind (idsellerkind,name,rnd) values(
 			 @i*30,
-			 concat('name',convert(varchar(10),@i*30)),
+			 CONCAT('name',CONVERT(VARCHAR(10),@i*30)),
 			 RAND()*1000
 		);
 set @i=@i+1;
@@ -147,7 +147,7 @@ set @i=0;
 while (@i<40) BEGIN
 insert into customerkind (idcustomerkind,name,rnd) values(
 			 @i*3,
-			 concat('name',convert(varchar(10),@i*3)),
+			 CONCAT('name',CONVERT(VARCHAR(10),@i*3)),
 			RAND()*1000
 		);
 set @i=@i+1;
@@ -194,4 +194,3 @@ BEGIN
 END
 
 GO
-

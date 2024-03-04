@@ -50,7 +50,7 @@ module.exports = function(config) {
             'client/components/metadata/EventManager.js',
             'client/components/metadata/Routing.js',
             'client/components/metadata/CssDefault.js',
-            'client/components/metadata/Utils.js',
+            'client/components/metadata/utils.js',
             'client/components/metadata/ConnWebService.js',
             'client/components/metadata/ConnWebSocket.js',
             'client/components/metadata/Connection.js',
