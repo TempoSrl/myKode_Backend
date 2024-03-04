@@ -33,7 +33,7 @@ module.exports = function(config) {
              'client/components/metadata/LocalResource.js',
              'client/components/metadata/Logger.js', //necessary for mandate_default_Spec
              'client/components/metadata/EventManager.js',
-             'client/components/metadata/Utils.js',
+             'client/components/metadata/utils.js',
              'client/components/metadata/Config.js', //necessary for testHelperPages
              'client/components/metadata/Routing.js', //necessary for testHelperPages
              'client/components/metadata/BootstrapModal.js', //necessary for testHelperPages ($().modal)

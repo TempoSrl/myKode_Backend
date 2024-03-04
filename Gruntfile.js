@@ -1010,9 +1010,9 @@ module.exports = function (grunt) {
         enrichEnv(process.env);
         asyncCmd(
             "node",
-            ["test/runSql",
-                "config\\dbList.json",
-                "test\\data\\jsApplication\\setup.sql",
+            [ path.join("test","runSql"),
+                path.join("config","dbList.json"),
+                path.join("test","data","jsApplication","setup.sql"),
                 "test_sqlServer"
             ],
             function (err, res, code, buffer) {
@@ -1045,9 +1045,9 @@ module.exports = function (grunt) {
         enrichEnv(process.env);
         asyncCmd(
             "node",
-            ["test/runSql",
-                "config\\dbList.json",
-                "test\\data\\jsApplication\\Destroy.sql",
+            [path.join("test","runSql"),
+                path.join("config","dbList.json"),
+                path.join("test","data","jsApplication","Destroy.sql"),
                 "test_sqlServer"
             ],
             function (err, res, code, buffer) {

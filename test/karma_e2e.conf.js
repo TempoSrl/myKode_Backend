@@ -46,7 +46,7 @@ module.exports = function(config) {
             'client/components/metadata/ConnWebService.js',
             'client/components/metadata/ConnWebSocket.js',
             'client/components/metadata/Connection.js',
-            'client/components/metadata/Utils.js',
+            'client/components/metadata/utils.js',
             'client/components/metadata/Security.js',
             'client/components/metadata/AuthManager.js',
             'client/components/metadata/TypedObject.js',
