@@ -17,8 +17,8 @@
 	var config = {
 
 		// ********** variabili di configurazione del framework, impostate nella funz init del main
-		backendUrl: "http://localhost:54471/",  // url del backend
-		basePath: "../", // path relativo dove si trovano i components del framework
+		backendUrl: "http://localhost:54471/",  // backend url
+		basePath: "", //"../", // path relativo per arrivare alla cartella "client"
 		basePathMetadata: "metadata/",
 		env: appMeta.config.envEnum.DEV,
 		forceShowErrorInfo: true,

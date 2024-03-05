@@ -151,7 +151,7 @@ GO
 
 
 -- CREAZIONE TABELLA flowchartuser --
-IF NOT EXISTS(select * from sysobjects where id = object_id(N'[flowchartuser]') and OBJECTPROPERTY(id, N'IsUserTable') = 1)
+IF NOT EXISTS(select * from sysobjects where id = object_id(N'[DBO].[flowchartuser]') and OBJECTPROPERTY(id, N'IsUserTable') = 1)
 BEGIN
 CREATE TABLE [DBO].[flowchartuser] (
 idflowchart varchar(34) NOT NULL,
@@ -192,7 +192,7 @@ delete from flowchartuser
 GO
 
 -- CREAZIONE TABELLA menu --
-IF NOT EXISTS(select * from sysobjects where id = object_id(N'[menu]') and OBJECTPROPERTY(id, N'IsUserTable') = 1)
+IF NOT EXISTS(select * from sysobjects where id = object_id(N'[DBO].[menu]') and OBJECTPROPERTY(id, N'IsUserTable') = 1)
 BEGIN
 CREATE TABLE [DBO].[menu] (
 idmenu int NOT NULL,
@@ -223,7 +223,7 @@ GO
 
 -- FINE GENERAZIONE SCRIPT --
 -- CREAZIONE TABELLA userenvironment --
-IF NOT EXISTS(select * from sysobjects where id = object_id(N'[userenvironment]') and OBJECTPROPERTY(id, N'IsUserTable') = 1)
+IF NOT EXISTS(select * from sysobjects where id = object_id(N'[DBO].[userenvironment]') and OBJECTPROPERTY(id, N'IsUserTable') = 1)
 BEGIN
 CREATE TABLE [DBO].[userenvironment] (
 idcustomuser varchar(50) NOT NULL,
@@ -239,8 +239,10 @@ variablename
 )
 END
 GO
+
+
 -- CREAZIONE TABELLA flowchartrestrictedfunction --
-IF NOT EXISTS(select * from sysobjects where id = object_id(N'[flowchartrestrictedfunction]') and OBJECTPROPERTY(id, N'IsUserTable') = 1)
+IF NOT EXISTS(select * from sysobjects where id = object_id(N'[DBO].[flowchartrestrictedfunction]') and OBJECTPROPERTY(id, N'IsUserTable') = 1)
 BEGIN
 CREATE TABLE [DBO].[flowchartrestrictedfunction] (
 idflowchart varchar(34) NOT NULL,
@@ -551,7 +553,7 @@ SET ANSI_NULLS ON
 GO
 
 -- CREAZIONE TABELLA audit --
-IF NOT EXISTS(select * from sysobjects where id = object_id(N'[audit]') and OBJECTPROPERTY(id, N'IsUserTable') = 1)
+IF NOT EXISTS(select * from sysobjects where id = object_id(N'[DBO].[audit]') and OBJECTPROPERTY(id, N'IsUserTable') = 1)
 BEGIN
 CREATE TABLE [DBO].[audit] (
 idaudit varchar(30) NOT NULL,
@@ -571,7 +573,7 @@ delete from audit
 GO
 
 -- CREAZIONE TABELLA auditparameter --
-IF NOT EXISTS(select * from sysobjects where id = object_id(N'[auditparameter]') and OBJECTPROPERTY(id, N'IsUserTable') = 1)
+IF NOT EXISTS(select * from sysobjects where id = object_id(N'[DBO].[auditparameter]') and OBJECTPROPERTY(id, N'IsUserTable') = 1)
 BEGIN
 CREATE TABLE [DBO].[auditparameter] (
 tablename varchar(150) NOT NULL,
@@ -594,7 +596,7 @@ delete from auditparameter
 GO
 
 -- CREAZIONE TABELLA auditcheck --
-IF NOT EXISTS(select * from sysobjects where id = object_id(N'[auditcheck]') and OBJECTPROPERTY(id, N'IsUserTable') = 1)
+IF NOT EXISTS(select * from sysobjects where id = object_id(N'[DBO].[auditcheck]') and OBJECTPROPERTY(id, N'IsUserTable') = 1)
 BEGIN
 CREATE TABLE [DBO].[auditcheck] (
 tablename varchar(150) NOT NULL,

@@ -15,8 +15,6 @@ describe('App1_E2E', function() {
             beforeEach(function (done) {
                 logger.setLogLevel(logType.INFO);
                 testHelper.initAppTests('app1');
-                console.log(appMeta.configDev);
-
                 appMeta.authManager.login(appMeta.configDev.userName, appMeta.configDev.password, new Date())
                     .then(function (res) {                    
                         expect(res).toBe(true);
