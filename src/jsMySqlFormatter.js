@@ -147,10 +147,10 @@ function conditionToSql(cond, context) {
 }
 
 /**
- * Surround expression in parenthesis
+ * Surround expression in parentheses
  * @method doPar
  * @public
- * @param {string} expr
+ * @param {string|null} expr
  * @returns {string}
  */
 function doPar(expr) {

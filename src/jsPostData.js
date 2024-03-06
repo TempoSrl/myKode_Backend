@@ -427,14 +427,14 @@ SinglePostData.prototype.calcAllAutoId = function(r) {
 SinglePostData.prototype.getSqlStatements = function (changedRows, optimisticLocking){
   const def = Deferred(),
       that = this;
-  let internalIndex = 0,
-      rows = [],
-      sql,
-      failed = false;
+  let /*int*/ internalIndex = 0,
+      /*DataRow[]*/ rows = [],
+      /*string*/ sql,
+      /*boolean*/ failed = false;
 
   /**
    * Evaluates a sql command to save a row and sends
-   * @param {ObjectRow} preparedRow
+   * @param {DataRow} preparedRow
    * @param {boolean} hasCustomAutoincrement
    */
   function sqlMerge(preparedRow, hasCustomAutoincrement){
@@ -442,14 +442,15 @@ SinglePostData.prototype.getSqlStatements = function (changedRows, optimisticLoc
       return;
     }
     rows.push(preparedRow);
-    const cmd = that.conn.getPostCommand(preparedRow, optimisticLocking, that.environment),
-        errCmd = that.sqlConn.giveErrorNumberDataWasNotWritten(internalIndex);
+    const cmd = that.conn.getPostCommand(preparedRow, optimisticLocking, that.environment,internalIndex);
+                //,errCmd = that.sqlConn.giveErrorNumberDataWasNotWritten(internalIndex);
     if (sql) { //sqlConn is a SqlDriver and knows how to concatenate single commands
-      sql = that.sqlConn.appendCommands([sql, cmd, errCmd]);
+      sql = that.sqlConn.appendCommands([sql, cmd]); //, errCmd
     } else {
-      sql = that.sqlConn.appendCommands([cmd, errCmd]);
+      sql = cmd; //that.sqlConn.appendCommands([cmd, errCmd]);
     }
     if (sql.length > that.sqlSizeLimit || hasCustomAutoincrement){
+      sql = that.sqlConn.appendCommands([that.sqlConn.headerForBatches(),sql,that.sqlConn.footerForBatches()]);
       def.notify(rows,sql);
       internalIndex = 0;
       rows = [];
@@ -475,8 +476,10 @@ SinglePostData.prototype.getSqlStatements = function (changedRows, optimisticLoc
         if (err) {
           failed = true;
           def.reject(err);
+          return;
         }
         if (rows.length>0){
+          sql = that.sqlConn.appendCommands([that.sqlConn.headerForBatches(),sql,that.sqlConn.footerForBatches()]);
           def.notify(rows, sql);
         }
         def.resolve();
@@ -520,13 +523,18 @@ SinglePostData.prototype.physicalPostBatch = function(conn, optimisticLocking){
       changedRows = this.rowChanges;
   //assume the OptimisticLocking present in the DataSet as default for optimisticLocking
   optimisticLocking = optimisticLocking || this.ds.optimisticLocking;
+
+  /**
+   *
+   * @param {DataRow[]}rows
+   * @param {string}sql
+   */
   function sqlCmdRunner(rows,sql){
-    const sqlComplete = that.sqlConn.appendCommands([sql, that.sqlConn.giveConstant(-1)]);
+    const /*string*/ sqlComplete = that.sqlConn.appendCommands([sql, that.sqlConn.giveConstant(-1)]);
     sqlCmdLaunched += 1;
     that.conn.runCmd(sqlComplete)
         .done(function(res){
-
-          if (res === -1){
+          if (res === -1){ //-1 is the last select in the batch
             sqlCmdRun += 1;
             if (endOfCmdReached){
               def.resolve();
@@ -538,7 +546,7 @@ SinglePostData.prototype.physicalPostBatch = function(conn, optimisticLocking){
             return;
           }
 
-          const row = rows[res];
+          const row = rows[res]; //Get the row at position res
           const sqlErrorCmd = that.conn.getPostCommand(row, optimisticLocking, that.environment);
           if (row.getRow().state === dataRowState.modified){
             that.reselect(row)
@@ -561,7 +569,7 @@ SinglePostData.prototype.physicalPostBatch = function(conn, optimisticLocking){
 
   //sets optimistic locking fields
   changedRows.forEach(r =>   optimisticLocking.prepareForPosting(r,that.environment));
-
+  //Checks if user has rights to write all rows
   if (that.security) {
     changedRows.forEach(r => {
       if (!that.security.canPost(r, that.environment)) {

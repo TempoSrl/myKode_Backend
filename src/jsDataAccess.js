@@ -551,9 +551,10 @@ DataAccess.prototype = {
      * @param {DataRow} r
      * @param {OptimisticLocking} optimisticLocking
      * @param {Environment} environment
+     * @param {int} [errNum]
      * @return {string|null}
      */
-    getPostCommand: function (r, optimisticLocking, environment) {
+    getPostCommand: function (r, optimisticLocking, environment, errNum) {
         const row = r.getRow();
         if (row.state === rowState.modified) {
             const modifiedFields=row.getModifiedFields();
@@ -567,7 +568,8 @@ DataAccess.prototype = {
                     values: _.map(modifiedFields, function (field) {
                         return r[field];
                     }),
-                    environment: environment
+                    environment: environment,
+                    errNum:errNum
                 });
         }
         if (row.state === rowState.added) {
@@ -581,7 +583,8 @@ DataAccess.prototype = {
                 {
                     tableName: row.table.postingTable(),
                     filter: optimisticLocking.getOptimisticLock(r),
-                    environment: environment
+                    environment: environment,
+                    errNum:errNum
                 });
         }
         return null;

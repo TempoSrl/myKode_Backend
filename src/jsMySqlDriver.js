@@ -10,6 +10,7 @@ let  _         = require('lodash');
 let formatter = require('./jsMySqlFormatter').jsMySqlFormatter;
 //let edge      = require('edge-js');
 let EdgeConnection  = require("./edge-sql").EdgeConnection;
+let q =  require("./../client/components/metadata/jsDataQuery");
 
 
 /* jshint -W016 */
@@ -566,12 +567,21 @@ Connection.prototype.getSelectCount = function (options) {
  * @param {string} options.tableName
  * @param {jsDataQuery} [options.filter]
  * @param {object} [options.environment]
+ * @param {int} [errNum]
  * @returns {string}
  */
 Connection.prototype.getDeleteCommand = function (options) {
-    var cmd = 'DELETE FROM ' + options.tableName;
+    let cmd = 'DELETE FROM ' + options.tableName;
+    let /*sqlFun|null*/ filter = options.filter;
+    if (options.errNum!==undefined){
+        let filterNoError = q.eq("@res",-1);
+        filter = filter?filterNoError:q.and(filter,filterNoError);
+    }
     if (options.filter) {
-        cmd += ' WHERE ' + formatter.conditionToSql(options.filter, options.environment);
+        cmd += ' WHERE ' + formatter.conditionToSql(filter, options.environment);
+        if (options.errNum!==undefined){
+            cmd+=`;SET @res := IF(@res != -1, @res, if (ROW_COUNT()!=0, -1, ${options.errNum}))`;
+        }
     } else {
         cmd += ' this command is invalid';
     }
@@ -614,9 +624,15 @@ Connection.prototype.getInsertCommand = function (table, columns, values) {
  * @param {string[]} options.columns
  * @param {Object[]} options.values
  * @param {object} [options.environment]
+ * @param {int} [errNum]
  * @returns {string}
  */
 Connection.prototype.getUpdateCommand = function (options) {
+    let /*sqlFun|null*/ filter = options.filter;
+    if (options.errNum!==undefined){
+        let filterNoError = q.eq("@res",-1);
+        filter = filter?filterNoError:q.and(filter,filterNoError);
+    }
     var cmd = 'UPDATE ' + options.table + ' SET ' +
         _.map(_.zip(options.columns,
             _.map(options.values, function (val) {
@@ -625,8 +641,11 @@ Connection.prototype.getUpdateCommand = function (options) {
             function (cv) {
                 return cv[0] + '=' + cv[1];
             }).join();
-    if (options.filter) {
-        cmd += ' WHERE ' + formatter.conditionToSql(options.filter, options.environment);
+    if (filter) {
+        cmd += ' WHERE ' + formatter.conditionToSql(filter, options.environment);
+        if (options.errNum!==undefined){
+            cmd+=`;SET @res := IF(@res != -1, @res, if (ROW_COUNT()!=0, -1, ${options.errNum}))`;
+        }
     }
     return cmd;
 };
@@ -702,6 +721,9 @@ Connection.prototype.callSPWithNamedParams = function (options) {
             spDef.notify(result); //DataTable
             results.push(result);
         })
+        .fail(function (err) {
+            spDef.reject(err);
+        })
         .done(function (result) {
             if (_.some(options.paramList,{out:true}) && options.skipSelect!==true) {
                 //An object is needed for output row
@@ -715,10 +737,8 @@ Connection.prototype.callSPWithNamedParams = function (options) {
                 results.push(result);
             }
             spDef.resolve(results);
-        })
-        .fail(function (err) {
-            spDef.reject(err);
         });
+
     return spDef.promise();
 };
 
@@ -879,6 +899,12 @@ Connection.prototype.sqlTypeForNBits = function(nbits){
 //
 // };
 
+Connection.prototype.headerForBatches = function () {
+    return 'set @res:=-1';
+};
+Connection.prototype.footerForBatches = function () {
+    return 'select @res';
+};
 
 /**
  * Returns a command that should return a number if last write operation did not have success
@@ -888,7 +914,7 @@ Connection.prototype.sqlTypeForNBits = function(nbits){
  * @return string
  */
 Connection.prototype.giveErrorNumberDataWasNotWritten = function (errNumber) {
-    return 'DECLARE rr int;\n SELECT ROW_COUNT() INTO rr;\nif rr=0 THEN\n select ' + formatter.quote(errNumber) + ';\n LEAVE;\n END IF;\n';
+    return 'IF ROW_COUNT()=0 THEN\n select ' + formatter.quote(errNumber) + ' as result;\n LEAVE;\n END IF;\n';
 };
 
 

@@ -1205,7 +1205,6 @@ describe("jsPostData",function() {
             }, 5000);
 
             it('should NOT call physicalPostBatch if prechecks throws', function (done) {
-
                 let errNum = 12;
                 postData.allPost[0].businessLogic = {
                     getChecks: function (res, conn, post) {
@@ -2082,7 +2081,7 @@ describe("jsPostData",function() {
             });
 
 
-            it('should call DAC.getPostCommand and giveErrorNumberDataWasNotWritten for every given row', function (done) {
+            it('should call DAC.getPostCommand and headerForBatches for every given row', function (done) {
                 let countCommands = 0;
                 spyOn(DAC, 'getPostCommand').and.callFake(function (row, locking, env) {
                     const def = Deferred();
@@ -2090,7 +2089,7 @@ describe("jsPostData",function() {
                     def.resolve('fake sql' + countCommands);
                     return def.promise();
                 });
-                spyOn(conn, 'giveErrorNumberDataWasNotWritten').and.callThrough();
+                spyOn(conn, 'headerForBatches').and.callThrough();
 
                 spyOn(DAC, 'runCmd').and.callFake(function () {
                     const def = Deferred();
@@ -2103,8 +2102,8 @@ describe("jsPostData",function() {
                     .done(function (res) {
                         expect(DAC.getPostCommand).toHaveBeenCalled();
                         expect(DAC.getPostCommand.calls.count()).toBe(changes.length);
-                        expect(conn.giveErrorNumberDataWasNotWritten).toHaveBeenCalled();
-                        expect(conn.giveErrorNumberDataWasNotWritten.calls.count()).toBe(changes.length);
+                        expect(conn.headerForBatches).toHaveBeenCalled();
+                        //expect(conn.giveErrorNumberDataWasNotWritten.calls.count()).toBe(changes.length);
                         done();
                     });
             });

@@ -245,8 +245,6 @@ describe('sqlServerDriver ', function () {
         });
 
 
-
-
         it('open with  right credential should return a success', function (done) {
             expect(canExecute).toBeTruthy();
             var goodSqlConn = getConnection('good');
@@ -425,7 +423,7 @@ describe('sqlServerDriver ', function () {
             });
         });
 
-        it('notify should be called from queryRaw when multiple result got (three select)', function (done) {
+        it('notify should be called from queryRaw when multiple result got (five select)', function (done) {
             expect(canExecute).toBeTruthy();
             var len            = [];
             sqlConn.queryBatch('select top 1 * from seller;select top 3 * from seller;select top 5 * from customer;'+

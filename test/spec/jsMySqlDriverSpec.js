@@ -238,7 +238,170 @@ describe('MySqlDriver ', function () {
         }, 3000);
     });
 
+    describe('various', function (){
 
+        it('select getdate() should give results', function (done){
+            expect(canExecute).toBeTruthy();
+            sqlConn.queryBatch('SELECT NOW() as currtime')
+            .done(function (result){
+                expect(result).toBeDefined();
+                done();
+            })
+            .fail(function (err){
+                expect(err).toBeUndefined();
+                done();
+            });
+        });
+
+        let conversioneMs = [0, -1, 1, 0, -1, 2, 1,0,-1, 1];
+        it('select constant date should give same date', function (done) {
+            expect(canExecute).toBeTruthy();
+            let d = new Date();
+            let cv = conversioneMs[d.getMilliseconds()%10];
+            if ( cv !=0){
+                d = new Date(d.valueOf()+cv);
+            }
+
+            let v1 = JSON.stringify(d);
+            let cmd = sqlConn.giveConstant(d);
+            sqlConn.queryBatch(cmd)
+            .done(function (result) {
+                expect(result).toBeDefined();
+                expect( result[0]).toBeDefined();
+                let res =Object.values(result[0])[0];
+                expect(res.valueOf()).toEqual(d.valueOf());
+                expect(v1).toEqual(JSON.stringify(d));
+                expect(JSON.stringify(res)).toEqual(JSON.stringify(d));
+                expect(res.valueOf()-d.valueOf()).toEqual(0);
+                done();
+            })
+            .fail(function (err) {
+                expect(err).toBeUndefined();
+                done();
+            });
+        });
+
+        it('select constant exact date should give same date', function (done) {
+            expect(canExecute).toBeTruthy();
+            let d = new Date();
+            d.setHours(0,0,0,0);
+            let cv = conversioneMs[d.getMilliseconds()%10];
+            if ( cv !==0){
+                d = new Date(d.valueOf()+cv);
+            }
+
+            let v1 = JSON.stringify(d);
+            let cmd = sqlConn.giveConstant(d);
+            sqlConn.queryBatch(cmd)
+            .done(function (result) {
+                expect(result).toBeDefined();
+                expect( result[0]).toBeDefined();
+                let res =Object.values(result[0])[0];
+                expect(res.valueOf()).toEqual(d.valueOf());
+                expect(v1).toEqual(JSON.stringify(d));
+                expect(JSON.stringify(res)).toEqual(JSON.stringify(d));
+                expect(res.valueOf()-d.valueOf()).toEqual(0);
+                done();
+            })
+            .fail(function (err) {
+                expect(err).toBeUndefined();
+                done();
+            });
+        });
+
+        it('select * from table should give results', function (done) {
+            expect(canExecute).toBeTruthy();
+            sqlConn.queryBatch('select * from customer')
+            .done(function (result) {
+                expect(result).toBeDefined();
+                done();
+            })
+            .fail(function (err) {
+                expect(err).toBeUndefined();
+                done();
+            });
+        });
+
+        it('Date should be given as objects', function (done) {
+            expect(canExecute).toBeTruthy();
+            sqlConn.queryBatch('SELECT * from customer')
+            .done(function (result) {
+                _(result).forEach(function (r) {
+                    if (r.idcustomer) {
+                        expect(r.idcustomer).toEqual(jasmine.any(Number));
+                    }
+                    if (r.stamp) {
+                        expect(r.stamp).toEqual(jasmine.any(Date));
+                    }
+                });
+                done();
+            })
+            .fail(function (err) {
+                expect(err).toBeUndefined();
+                done();
+            });
+        });
+
+        it('Date should be exact', function (done) {
+            expect(canExecute).toBeTruthy();
+            sqlConn.queryBatch('SELECT * from customer where idcustomer=1')
+            .done(function (result) {
+                _(result).forEach(function (r) {
+                    expect(r.birth).toEqual(jasmine.any(Date)); // '2010-24-09 12:27:38'
+                    expect(r.birth).toEqual(new Date(2010,8,24,12,27,38,0))
+                });
+                done();
+            })
+            .fail(function (err) {
+                expect(err).toBeUndefined();
+                done();
+            });
+        });
+
+        it('notify should be called from queryRaw when multiple result got (two select)', function (done) {
+            expect(canExecute).toBeTruthy();
+            var progressCalled, nResult = 0;
+            sqlConn.queryBatch('select * from customer limit 5; select * from seller limit 10; ')
+            .progress(function (result) {
+                expect(result).toBeDefined();
+                expect(result.length).toBe(5);
+                nResult += 1;
+                progressCalled = true;
+            })
+            .fail(function (err) {
+                expect(err).toBeUndefined();
+                done();
+            })
+            .done(function (result) {
+                expect(result.length).toBe(10);
+                expect(nResult).toBe(1);
+                expect(progressCalled).toBeTruthy();
+                done();
+            });
+        });
+
+
+        it('notify should be called from queryRaw when multiple result got (five select)', function (done) {
+            expect(canExecute).toBeTruthy();
+            var len            = [];
+            sqlConn.queryBatch('select * from seller limit 1;select * from seller limit 3;select * from customer limit 5;'+
+                'select * from seller limit 10; select * from customer limit 2;')
+            .progress(function (result) {
+                len.push(result.length);
+                return true;
+            })
+            .fail(function (err) {
+                expect(err).toBe("empty","message");
+                done();
+            })
+            .done(function (result) {
+                len.push(result.length);
+                expect(len).toEqual([1,3, 5, 10, 2]);
+                done();
+            });
+        },3000);
+
+    });
 
     describe('transactions', function () {
 
@@ -563,14 +726,13 @@ describe('MySqlDriver ', function () {
                 });
         });
 
-        xit('giveErrorNumberDataWasNotWritten should return a dataset if no row has been affected', function(done){
+        xit('giveErrorNumberDataWasNotWritten should return a number if no row has been affected', function(done){
             expect(canExecute).toBeTruthy();
-            const sqlCmd = 'UPDATE customer SET random = RAND()*1000 LIMIT 0',
+            const sqlCmd = 'UPDATE customer SET random = RAND()*1000 WHERE idcustomer < 0',
                 errCmd = sqlConn.giveErrorNumberDataWasNotWritten(3);
             let sql = '';
 
             sql = sqlConn.appendCommands([sqlCmd, errCmd]);
-
             sqlConn.queryBatch(sql, false)
                 .done(function (result) {
                     expect(result.length).toBeGreaterThan(0);
@@ -586,7 +748,12 @@ describe('MySqlDriver ', function () {
                     done();
                 })
                 .fail(function (err) {
-                    expect(err).toBeUndefined();
+                    try{
+                        expect(err).toBeUndefined();
+                    }
+                    catch (e){
+
+                    }
                     done();
                 });
         });

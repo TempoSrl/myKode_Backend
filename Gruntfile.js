@@ -959,18 +959,29 @@ module.exports = function (grunt) {
 
 
     function gruntWhite(str){
-        grunt.log.write(chalk.white(str));
+        chalkModule.then(()=>{
+            grunt.log.write(chalk.white(str));
+        });
+
     }
 
     function gruntYellow(str){
-        grunt.log.writeln(chalk.yellow(str));
+        chalkModule.then(()=>{
+            grunt.log.writeln(chalk.yellow(str));
+        });
     }
 
     function gruntLog(str){
-        grunt.log.writeln(chalk.green(str));
+        chalkModule.then(()=>{
+            grunt.log.writeln(chalk.green(str));
+        });
     }
+
     function gruntError(str){
-        grunt.log.error(chalk.red(str));
+        chalkModule.then(()=>{
+            grunt.log.error(chalk.red(str));
+        });
+
     }
 
     function writeOutput(err, res, code, buffer){
@@ -1054,6 +1065,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask("createE2eDB","Create E2e tables",function(){
         var done = this.async();
+        enrichEnv(process.env);
 
         const mainInfo = grunt.file.readJSON(path.join('config', 'appList.json'));
         let appInfo;
@@ -1277,7 +1289,7 @@ module.exports = function (grunt) {
 
     grunt.registerTask("addUserE2e","Aggiungi utente per test e2e",function(){
         let done = this.async();
-
+        enrichEnv(process.env);
         const mainInfo = grunt.file.readJSON(path.join('config', 'appList.json'));
         let appInfo;
         mainInfo.forEach(i=> {if (i.e2e)  {appInfo=i; }});

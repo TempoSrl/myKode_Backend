@@ -9,6 +9,7 @@ const formatter = require('./jsSqlServerFormatter').jsSqlServerFormatter;
 const CType = require("./../client/components/metadata/jsDataSet").CType;
 //const edge = require('edge-js');
 const {tableName} = require("../config/anonymousPermissions");
+const q = require("../client/components/metadata/jsDataQuery");
 const EdgeConnection = require("./edge-sql").EdgeConnection;
 
 /**
@@ -569,12 +570,17 @@ Connection.prototype.updateBatch = function (query,timeout) {
  * @param {string} options.tableName
  * @param {sqlFun} [options.filter]
  * @param {object} [options.environment]
+ * @param {int} [errNum]
  * @returns {string}
  */
 Connection.prototype.getDeleteCommand = function (options) {
+    let /*sqlFun|null*/ filter = options.filter;
     let cmd = 'DELETE FROM ' + options.tableName;
-    if (options.filter) {
-        cmd += ' WHERE ' + formatter.toSql(options.filter, options.environment);
+    if (filter) {
+        cmd += ' WHERE ' + formatter.toSql(filter, options.environment);
+        if (options.errNum!==undefined){
+            cmd += ";"+this.giveErrorNumberDataWasNotWritten(options.errNum);
+        }
     } else {
         cmd += ' this command is invalid';
     }
@@ -606,6 +612,7 @@ Connection.prototype.getInsertCommand = function (table, columns, values) {
  * @param {string[]} options.columns
  * @param {Object[]} options.values
  * @param {object} [options.environment]
+ * @param {int} [errNum]
  * @returns {string}
  */
 Connection.prototype.getUpdateCommand = function (options) {
@@ -619,10 +626,20 @@ Connection.prototype.getUpdateCommand = function (options) {
             }).join();
     if (options.filter) {
         cmd += ' WHERE ' + formatter.conditionToSql(options.filter, options.environment);
+        if (options.errNum!==undefined){
+            cmd += ";"+this.giveErrorNumberDataWasNotWritten(options.errNum);
+        }
     }
     return cmd;
 };
 
+
+Connection.prototype.headerForBatches = function () {
+    return null;
+};
+Connection.prototype.footerForBatches = function () {
+    return 'select -1';
+};
 
 /**
  * evaluates the sql command to call aSP with a list of parameters each of which is an object having:

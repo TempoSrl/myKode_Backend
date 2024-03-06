@@ -8,6 +8,7 @@ const _ = require('lodash');
 const formatter = require('./jsOracleFormatter').jsOracleFormatter;
 const CType = require("./../client/components/metadata/jsDataSet").CType;
 const {tableName} = require("../config/anonymousPermissions");
+const q = require("../client/components/metadata/jsDataQuery");
 const EdgeConnection = require("./edge-sql").EdgeConnection;
 
 /**
@@ -609,12 +610,17 @@ Connection.prototype.updateBatch = function (query,timeout) {
  * @param {string} options.tableName
  * @param {sqlFun} [options.filter]
  * @param {object} [options.environment]
+ * @param {int} [errNum]
  * @returns {string}
  */
 Connection.prototype.getDeleteCommand = function (options) {
+    let /*sqlFun|null*/ filter = options.filter;
     let cmd = 'DELETE FROM ' + quoteStringIfNecessary(options.tableName);
     if (options.filter) {
         cmd += ' WHERE ' + formatter.toSql(options.filter, options.environment);
+        if (options.errNum!==undefined){
+            cmd += ";"+this.giveErrorNumberDataWasNotWritten(options.errNum);
+        }
     } else {
         cmd += ' this command is invalid';
     }
@@ -647,6 +653,7 @@ Connection.prototype.getInsertCommand = function (table, columns, values) {
  * @param {string[]} options.columns
  * @param {Object[]} options.values
  * @param {object} [options.environment]
+ * @param {int} [errNum]
  * @returns {string}
  */
 Connection.prototype.getUpdateCommand = function (options) {
@@ -660,6 +667,9 @@ Connection.prototype.getUpdateCommand = function (options) {
             }).join();
     if (options.filter) {
         cmd += ' WHERE ' + formatter.conditionToSql(options.filter, options.environment);
+        if (options.errNum!==undefined){
+            cmd += ";"+this.giveErrorNumberDataWasNotWritten(options.errNum);
+        }
     }
     cmd += ';';
     return cmd;
@@ -935,6 +945,14 @@ Connection.prototype.queryBatch = function (query, raw,timeout) {
 
 };
 
+
+Connection.prototype.headerForBatches = function () {
+    return null;
+};
+Connection.prototype.footerForBatches = function () {
+    return this.giveErrorNumberDataWasNotWritten(-1);
+};
+
 /**
  * Returns a command that should return a number if last write operation did not have success
  * @public
@@ -1031,7 +1049,7 @@ Connection.prototype.variableNameForNBits = function(num,nbits){
  * @return string
  */
 Connection.prototype.giveConstant = function (c) {
-    let selCmd = " OPEN internalCur FOR SELECT "
+    let selCmd = " OPEN internalCur FOR SELECT ";
     selCmd += formatter.quote(c);
     selCmd += ' FROM DUAL; '
 
