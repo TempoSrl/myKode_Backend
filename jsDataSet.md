@@ -6,7 +6,7 @@ A **DataSet** is a collection of DataTables and relations between tables (DataRe
 
 
 ```mermaid
-graph TD;
+erDiagram
     TABELLA_PRINCIPALE ||--o{ TABELLA_FIGLIA_1_N : "R1 (Subentità) - FK su PK padre"
     TABELLA_FIGLIA_1_N ||--o{ TABELLA_FIGLIA_1_N_RICORSIVA : "R1 (Ricorsiva Subentità) - FK su PK padre"
     TABELLA_PRINCIPALE ||--|| TABELLA_FIGLIA_1_1 : "R2 (1 a 1 Specializzazione) - FK su PK padre"
