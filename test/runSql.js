@@ -1,5 +1,6 @@
 let fs =require("fs");
 let path =require("path");
+const util = require('util');
 
 let dbConfigFileName= process.argv[2];
 let scriptName= process.argv[3];
@@ -47,5 +48,11 @@ dbConn.open().done(function (){
             clearInterval(intvl);
         }
     }, 100);
-});
+})
+.fail((err)=>{
+        error=true;
+        process.stderr.write(" - Error:"+err+"\n");
+        stop=true;
+    });
+
 

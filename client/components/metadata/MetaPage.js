@@ -2283,7 +2283,7 @@
             let returnImmediately = false;
 
             // DEPRECATO enumerato che indica se devo risolvere il deferred globale "this.resultDeferred" della maschera oppure tornare solamente true/false
-            // Questo poichè il saveformData potrebbe esserte chiamato da cmdMainSave di un dettaglio,, in quel caso esco con resDialogResultOk
+            // Questo poichè il saveformData potrebbe essere chiamato da cmdMainSave di un dettaglio,, in quel caso esco con resDialogResultOk
             // var resultType = ResultType.resFalse;
 
             const res = this.callMethod(toOverrideEvent.beforePost)
@@ -2958,19 +2958,18 @@
                     return true; // continua nel ciclo
                 }
 
-                const childRowCopy = sourceRow.getRow().getChildRows(rel.name);
+                const childRowCopy = rel.getChild(sourceRow);
 
                 const metaChild = appMeta.getMeta(childTableName);
                 metaChild.setDefaults(childTable);
 
-                // creo catena di deferred iterative, ognuna ha bisogno del risultato precedente. poichè se ci sono più child devo inserire in
+                // Creo catena di deferred iterative, ognuna ha bisogno del risultato precedente. poichè se ci sono più child devo inserire in
                 // self.state.DS.tables[defObj.childTableName] le righe con id momentaneo calcolato diverso. Lui riesce a calcolare
-                // l'id ovviamente solo se già ci sono le righe messe in precedenza. Nel vecchi metodo prima di questa modifica,
-                // metteva solo una riga l'ultima poichè l'id era sempre lo stesso. nel ciclo passavo sempre la tabella vuota all'inizio
+                // l'id ovviamente solo se già ci sono le righe messe in precedenza. Nel vecchio metodo prima di questa modifica,
+                // metteva solo una riga l'ultima poiché l'id era sempre lo stesso. Nel ciclo passavo sempre la tabella vuota all'inizio
                 let chain = $.when();
 
                 _.forEach(childRowCopy, function (childSourceRow) {
-
                     chain = chain.then(function() {
                         return metaChild.getNewRow(destRow.getRow(), childTable)
                         .then(function (newChildRow) {
@@ -2994,7 +2993,7 @@
                     });
                 });
 
-                // inserisco array di deferred , cioè uno per ogni relazione di cui eventualmente devo vedere i figli
+                // inserisco array di deferred, cioè uno per ogni relazione di cui eventualmente devo vedere i figli
                 allNewChildRowDeferred.push(chain);
 
             }); // chiude primo for sulle relazioni
@@ -3335,9 +3334,8 @@
                 const currEntityRow = self.helpForm.lastSelected(primaryDataTable);
                 if (!currEntityRow) return def.resolve(null);
 
-
                 if (self.detailPage){
-                    // in pag dettaglio metteva il dialog result a cencel: formController.linkedForm.DialogResult = DialogResult.Cancel;
+                    // in pag dettaglio metteva il dialog result a cancel: formController.linkedForm.DialogResult = DialogResult.Cancel;
                     self.currOperation = currOperation.none;
 
                     // Deve fare qualcosa di simile a quel che c'è in btnMainSave (return to caller, DeferredResult.resolve(false) )
@@ -4093,10 +4091,9 @@
 
             const primaryRow = this.helpForm.lastSelected(this.getPrimaryDataTable());
             if (!primaryRow) return def.resolve(true);
-            //console.log("primaryRow is ",primaryRow)
             const res =
-                this.helpForm.getControls().
-                then(()=> {
+                this.helpForm.getControls()
+                .then(()=> {
                     return this.callMethod(toOverrideEvent.afterGetFormData);
                 })
                 .then(function (){

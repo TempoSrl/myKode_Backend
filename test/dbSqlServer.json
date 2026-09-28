@@ -1,6 +1,6 @@
 {
-    "server": "127.0.0.1",
-    "database": "test",
+    "server": "localhost",
+    "database": "test2",
     "user": "sa",
     "pwd": "afrodite",
     "sqlModule": "jsSqlServerDriver",

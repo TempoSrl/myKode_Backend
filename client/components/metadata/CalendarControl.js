@@ -44,6 +44,7 @@
 			this.titleColumnName = (typeof $(this.el).data("mdltitlecolumnname") === "undefined") ? "" : $(this.el).data("mdltitlecolumnname"); // default start
 			this.stopColumnName = (typeof $(this.el).data("mdlstopcolumnname") === "undefined") ? "" : $(this.el).data("mdlstopcolumnname"); // opzionale
 			this.mainColor = (typeof $(this.el).data("mdlmaincolor") === "undefined") ? '#0275d8' : $(this.el).data("mdlmaincolor"); // opzionale
+			this.mergeableKey = (typeof $(this.el).data("mdlmergeablekey") === "undefined") ? "" : $(this.el).data("mdlmergeablekey"); // opzionale
 			this.defaultDate = moment(); // centrato su oggi
 
 			// gestione bottoni editing direttamente su griglia
@@ -146,7 +147,7 @@
 				if ((colStart.sqltype && colStart.sqltype.toLowerCase() !== 'date')) stopColumnName = this.stopColumnName;
 			}
 
-			// se non è all day eseguo cehck su colonna di stop
+			// se non è all day eseguo check su colonna di stop
 			if (stopColumnName) {
 				var colStop = dtRow.table.columns[stopColumnName];
 				if (!colStop) {
@@ -171,7 +172,11 @@
 			evObj.color = (objConfig && objConfig.color) ?
 				(objConfig.color === 'color' ? row.color : objConfig.color) //se ho passato come colore 'color' vuol dire che il colore è sulla riga
 				: this.mainColor;
-			evObj.allDay = !evObj.end;
+			evObj.allDay = !evObj.end || (evObj.start.getHours() === 0 && evObj.start.getMinutes() === 0 && evObj.end.getHours() === 0 && evObj.end.getMinutes() === 0);
+
+			//se non è un evento all day e non ha un titolo lo metto come spazio altrimenti non vengono visualizzate nemmeno le ore inizio e fine
+			if (!evObj.allDay && !evObj.title) evObj.title = ' ';
+
 			evObj.mine = !objConfig;
 			return evObj;
 		},
@@ -254,7 +259,7 @@
 				navLinks: true, // can click day/week names to navigate views
 				eventLimit: true, // allow "more" link when too many events
 
-				// quando è Calendar normale al click sull'evdento mostro dialog con altri pulsanti e info varie
+				// quando è Calendar normale al click sull'evento mostro dialog con altri pulsanti e info varie
 				// altrimenti in ricerca gestisco il lcick e doppio click per selezionare la riga dalla lista
 				eventClick: function (calEvent, jsEvent, view) {
 					if (!self.isListManager) self.infoClick(calEvent);
@@ -279,6 +284,21 @@
 					// rimuove l'img info che appare nel giorno attuale (solo in bootstrap4). la mette lui di defualt sul css
 					if ($(".alert-info").length > 0) $(".alert-info").css('background-image', 'none');
 					self.toggleIconWeekendButtons();
+				},
+
+				//gestisce la visualizzazione degli eventi che durano più giorni e sono tutto il giorno:
+				//anche se il giorno finale viene inserito con ore 0:00 lui lo mostra pieno come se fosse fino alle 24:00
+				eventDataTransform: function (eventData) {
+					// Clona l'evento per non modificare l'originale
+					var e = Object.assign({}, eventData);
+
+					if (e.allDay && e.end /*&& (e.end.getDate() - 1 != e.start.getDate())*/) {
+						// Aggiungi un giorno alla data di fine SOLO per la visualizzazione
+						var endDate = new Date(e.end);
+						endDate.setDate(endDate.getDate() + 1);
+						e.end = endDate;
+					}
+					return e;
 				},
 
 			};
@@ -363,7 +383,15 @@
 		getEventTime: function (event) {
 			try {
 				if (!event.allDay) {
-					return event.start.hours() + ":" + _.padStart(event.start.minutes(), 2, '0');
+					if (event.end) {
+						let diff = event.end.diff(event.start, 'minutes');
+						//mostro il numero di ore davanti alle ore
+						let hours = Math.floor(diff / 60);
+						let mins = diff % 60;
+						return 'Ore: ' + hours + (mins?':' + mins :'') + '; ' +  event.start.hours() + ":" + _.padStart(event.start.minutes(), 2, '0') + "-" + event.end.hours() + ":" + _.padStart(event.end.minutes(), 2, '0');
+					}
+					else
+                        return event.start.hours() + ":" + _.padStart(event.start.minutes(), 2, '0');
 				}
 				return '';
 			} catch (e) {

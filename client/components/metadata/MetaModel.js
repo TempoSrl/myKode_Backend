@@ -1459,6 +1459,7 @@
 		 */
 		copyAutoincrementsProperties: function (dtIn, dtOut) {
 			// faccio un semplice clone
+			if ( Object.keys(dtOut.autoIncrementColumns).length >0) return;
 			dtOut.autoIncrementColumns = _.cloneDeep(dtIn.autoIncrementColumns);
 		},
 

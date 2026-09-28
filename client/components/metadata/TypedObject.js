@@ -201,6 +201,12 @@
                     return news;
                 }
             }
+
+            if (fmt === "skipNChar") {
+                let toSkip = getField(tag, 3);
+                return this.value.toString().substring(toSkip, this.value.toString().length);
+            }
+
             return this.value.toString();
         }
     }
@@ -454,7 +460,7 @@
             case "Byte":
                 return val.toString();
             case "DateTime":
-            case "date":
+            case "Date":
                 return fromDateToString(val, "d");
             default:
                 return val.toString();
@@ -493,7 +499,7 @@
             case "Byte":
                 return parseInt(s);
             case "DateTime":
-            case "date":
+            case "Date":
                 // utilizzo la funz. già implementata passando d
                 return fromStringToDate(s, "d");
             default:

@@ -461,7 +461,7 @@
              * @method setOrderBy
              * @public
              * @description SYNC
-             * Sets the static filter
+             * Sets the ordering
              */
             setSorting: function() {
                 return null;
@@ -549,12 +549,12 @@
                 const self = this;
                 const res = this.getData.selectCount(tableName, filter)
                     .then(function (resultCount) {
-                    if (resultCount !== 1) return def.resolve(null);
-                    return self.getData.runSelect(tableName, "*", filter, null) //self.primaryTableName
-                        .then(function (dataTable) {                            
-                            if (!dataTable.rows.length) return def.resolve(null);
-                            return def.from(self.checkSelectRow(dataTable, dataTable.rows[0].getRow()));
-                    });
+                        if (resultCount !== 1) return def.resolve(null);
+                        return self.getData.runSelect(tableName, "*", filter, null) //self.primaryTableName
+                            .then(function (dataTable) {                            
+                                if (!dataTable.rows.length) return def.resolve(null);
+                                return def.from(self.checkSelectRow(dataTable, dataTable.rows[0].getRow()));
+                        });
                     });
 
                 return def.from(res).promise();
@@ -593,7 +593,6 @@
                     });
                 });
                 return def.from(res).promise();
-
             },
 
             /**
@@ -608,94 +607,205 @@
                     return Deferred().resolve(true).promise();
             },
 
-            recusiveNewCopyChilds: recusiveNewCopyChilds
+            /**
+             *
+             * @param {ObjectRow} destRow
+             * @param {ObjectRow} sourceRow
+             */
+            recursiveNewCopyChilds:function (destRow, sourceRow) {
+                let self = this;
+                /* DataTable */
+                let sourceTable = sourceRow.getRow().table;
+                /* DataSet */
+                let dsDest = destRow.getRow().table.dataset;
+                let relations = sourceTable.childRelations();
+
+                let allNewChildRowDeferred = [];
+
+                _.forEach(relations,
+                    /**
+                     * @param {DataRelation} rel
+                     * @return {boolean}
+                     */
+                    function (rel) {
+                        let childTableName = rel.childTable;
+                        let /* DataTable */ childTable = dsDest.tables[childTableName];
+                        if (childTable.skipInsertCopy()) return true;
+
+                        if (!metaModel.isSubEntity(childTable, destRow.getRow().table)) {
+                            return true; // continua nel ciclo
+                        }
+
+                        if (childTableName === sourceTable.name) {
+                            return true; // continua nel ciclo
+                        }
+
+                        let childRowCopy = rel.getChild(sourceRow); //  sourceRow.getRow().getChildRows(rel.name);
+
+                        let metaChild = this.getMeta(childTableName);
+                        metaChild.setDefaults(childTable);
+                        metaChild.setSorting(childTable);
+
+                        // Creo catena di deferred iterative, ognuna ha bisogno del risultato precedente. Poiché se ci sono più child devo inserire in
+                        // self.state.DS.tables[defObj.childTableName] le righe con id momentaneo calcolato diverso. Lui riesce a calcolare
+                        // l'id ovviamente solo se già ci sono le righe messe in precedenza. Nel vecchio metodo prima di questa modifica,
+                        // metteva solo una riga l'ultima poiché l'id era sempre lo stesso. Nel ciclo passavo sempre la tabella vuota all'inizio
+                        let chain = Deferred.resolve(true);
+
+                        _.forEach(childRowCopy, function (childSourceRow) {
+                            chain = chain.then(function () {
+                                return metaChild.getNewRow(destRow.getRow(), childTable)
+                                    .then(function (newChildRow) {
+                                        // Copio la riga child calcolata sul dt destinazione, così vado ogni volta ad incrementare le righe.
+                                        // Nel successivo .then della catena il dt sarà modificato
+                                        _.forIn(childTable.columns,
+                                            /**
+                                             * @param {DataColumn} childCol
+                                             * @param {string} childColName
+                                             */
+                                            function (childCol, childColName) {
+                                                if (rel.childCols.some(c => c === childColName)) return true; // continuo nel ciclo
+                                                // don't copy autoincrements
+                                                if (childTable.autoIncrement(childColName)) {
+                                                    return true;
+                                                }
+                                                metaChild.insertCopyColumn(childCol, childSourceRow, newChildRow);
+                                            });
+                                        return self.recursiveNewCopyChilds(newChildRow, childSourceRow);
+                                    });
+                            });
+
+                            // inserisco array di deferred, cioè uno per ogni relazione di cui eventualmente devo vedere i figli
+                            allNewChildRowDeferred.push(chain);
+                        });
+
+                    }); // chiude primo for sulle relazioni
+
+                return Deferred.when.apply(Deferred, allNewChildRowDeferred);
+            },
+
+            /**
+            * Calculates calculated fields on the row r. based on some info.
+            * @param {ObjectRow} r.  r is the row where to insert the calculated values
+            * @param {string} listtype
+            */
+            calculateFields: function (r, listtype) {
+                var tableToFill = r.getRow().table;
+
+                var includeAll = function (cols, columnKeys) {
+                    var arrayKey = _.split(columnKeys, '-');
+                    return _.every(arrayKey, function (columnKey) {
+                        return _.includes(cols, columnKey);
+                    });
+                };
+
+                // prendo customObjCalculateFields linkato durante la describeColumns sul meta js
+                var customObjCalculateFields = tableToFill.customObjCalculateFields;
+                /**
+                 * Finds the rows related to row "r" with parent or child relations, and search in those row a value for the column relatedColumnName
+                 * It excludes the table tNameToExclude finding the table related with the row
+                 * @param {ObjectRow} r the row to insert the calculated value
+                 * @param {string} relatedTableName name of table related
+                 * @param {string} relatedColumnName name of related column
+                 * @param {string} columnKeys keys on relation to check, separated by -. parent or child
+                 * @param {array} arrNameToExclude array with the names of tables already scanned and so they are to exclude in the search of the "relatedTableName"
+                 * @returns {object | null} is the calculated value to return and attach to the r[key]
+                 */
+                var getValueRelatedRow = function (r, relatedTableName, relatedColumnName, columnKeys, arrNameToExclude) {
+                    var R = r.getRow();
+                    var t = R.table;
+
+                    var relatedTable = t.dataset.tables[relatedTableName];
+                    var related = null;
+                    
+                    var foundValue = null;
+
+                    if (!relatedTable) {
+                        logger.log(logType.ERROR, 'calculateFields(): grid for ' + tableToFill.name + ', table ' + relatedTableName + ' not in the dataset');
+                        return null;
+                    }
+
+                    // se la colonna non appartiene alla tabella in cui la devo cercare esco subito
+                    if (!relatedTable.columns[relatedColumnName]) {
+                        logger.log(logType.ERROR, 'calculateFields(): grid for ' + tableToFill.name + ', column ' + relatedColumnName + ' not in the table ' + relatedTableName);
+                        return null;
+                    }
+
+                    // cerco su relazioni parent
+                    _.forEach(
+                        // all'inizio si parte dalla columnKey di partenza, nei salti successivi si considerano tutte le foreign key possibili
+                        _.filter(t.parentRelations(), function (relInt) {
+                            return !columnKeys || includeAll(relInt.childCols, columnKeys);
+                        }), function (rel) {
+                            if (foundValue !== null) return false; // trovato esco dal ciclo
+                            if (_.includes(arrNameToExclude, rel.parentTable)) return true; // non risalgo sulla tab da cui provengo
+                            var conditionFound = columnKeys ? (rel.parentTable === relatedTableName && includeAll(rel.childCols, columnKeys)) : rel.parentTable === relatedTableName;
+                            if (conditionFound) {
+                                related = R.getParentRows(rel.name);
+                                if (related.length === 0) return false; // non trovate righe nella tabella in cui mi aspetto il valore e quindi esco dal ciclo
+                                foundValue = related[0][relatedColumnName];
+                                return false; // trovato esco dal ciclo
+                            }
+                            else {
+                                // se non è relazione diretta vado in ricorsione                                
+                                _.forEach(R.getParentRows(rel.name), function (row) {
+                                    arrNameToExclude.push(rel.parentTable);
+                                    // passo nullnella ricorsione perchè columnKeys potrebbe cambaire di nome, ma la relazione è quella che comanda quindi è un check superfluo
+                                    foundValue = getValueRelatedRow(row, relatedTableName, relatedColumnName, null, arrNameToExclude);
+                                    if (foundValue !== null) return false; // trovato esco dal ciclo
+                                });
+                            }
+                        });
+
+                    // cerco su relazioni child
+                    _.forEach(
+                        // all'inizio si parte dalla columnKeys di partenza, nei salti successivi si considerano tutte le foreign key possibili
+                        _.filter(t.childRelations(), function (relInt) {
+                            return !columnKeys || includeAll(relInt.parentCols, columnKeys);
+                        }), function (rel) {
+                            if (foundValue !== null) return false;
+                            if (_.includes(arrNameToExclude, rel.childTable)) return true;
+                            var conditionFound = columnKeys ? (rel.childTable === relatedTableName && includeAll(rel.parentCols, columnKeys)) : rel.childTable === relatedTableName;
+                            if (conditionFound) {
+                                related = R.getChildRows(rel.name);
+                                if (related.length === 0) return false;
+                                foundValue = related[0][relatedColumnName];
+                                return false;
+                            }
+                            else {
+                                // se non è relazione diretta vado in ricorsione                                
+                                _.forEach(R.getChildRows(rel.name), function (row) {
+                                    arrNameToExclude.push(rel.childTable);
+                                    foundValue = getValueRelatedRow(row, relatedTableName, relatedColumnName, null, arrNameToExclude);
+                                    if (foundValue !== null) return false;
+                                });
+                            }
+                        });
+
+                    return foundValue;
+                };
+
+                // ogni oggetto in customObjCalculateFields è del tipo {tableNameLookup:valore, columnNameLookup:valore, columnNamekey:nomi campi chiave };
+                _.forOwn(customObjCalculateFields, function (value, key) {
+                    var toMark = (r.getRow().state === dataRowState.unchanged);
+                    // chiama la funzione locale al metodo, definita sopra, la quale calcola in base alla relazione quale campo deve prendere
+                    r[key] = getValueRelatedRow(r, value.tableNameLookup, value.columnNameLookup, value.columnNamekey, [tableToFill.name]);
+                    if (toMark) r.getRow().acceptChanges();
+                });
+            },
+
         };
 
         /** Take effect on client side **/
 
         MetaData.prototype.localResource = localResource;
         MetaData.prototype.getData = getDataExt;        //this is replaced server side with ctx.getDataInvoke
-        MetaData.prototype.security = securityExt;      //this is replaces server side with ctx.environment;
-        MetaData.prototype.getMeta = getMeta;           //this is replaces server side with ctx.getMeta;
+        MetaData.prototype.security = securityExt;      //this is replaced server side with ctx.environment;
+        MetaData.prototype.getMeta = getMeta;           //this is replaced server side with ctx.getMeta;
 
 
 
-        /**
-         *
-         * @param {ObjectRow} destRow
-         * @param {ObjectRow} sourceRow
-         */
-        function recusiveNewCopyChilds (destRow, sourceRow) {
-            /* DataTable */
-            let sourceTable = sourceRow.getRow().table;
-            /* DataSet */
-            let dsSource = sourceTable.dataset;
-            let relations = sourceTable.childRelations();
 
-            let allNewChildRowDeferred = [];
-
-            _.forEach(relations,
-                /**
-                 * @param {DataRelation} rel
-                 * @return {boolean}
-                 */
-                function (rel) {
-
-                    let childTableName = rel.childTable;
-                    let /* DataTable */ childTable = dsSource.tables[childTableName];
-                    if (childTable.skipInsertCopy()) return true;
-
-                    if (!metaModel.isSubEntity(childTable, destRow.getRow().table)) {
-                        return true; // continua nel ciclo
-                    }
-
-                    if (childTableName === sourceTable.tableName) {
-                        return true; // continua nel ciclo
-                    }
-
-
-                    let childRowCopy = rel.getChild(sourceRow); //  sourceRow.getRow().getChildRows(rel.name);
-
-                    let metaChild = this.getMeta(childTableName);
-                    metaChild.setDefaults(childTable);
-                    metaChild.setSorting(childTable);
-
-                    // creo catena di deferred iterative, ognuna ha bisogno del risultato precedente. poichè se ci sono più child devo inserire in
-                    // self.state.DS.tables[defObj.childTableName] le righe con id momentaneo calcolato diverso. Lui riesce a calcolare
-                    // l'id ovviamente solo se già ci sono le righe messe in precedenza. Nel vecchi metodo prima di questa modifica,
-                    // metteva solo una riga l'ultima poichè l'id era sempre lo stesso. nel ciclo passavo sempre la tabella vuota all'inizio
-                    let chain = Deferred.resolve(true);
-
-                    _.forEach(childRowCopy, function (childSourceRow) {
-
-                        chain = chain.then(function () {
-
-                            return metaChild.getNewRow(destRow,childTable)
-                            .then(function (newChildRow) {
-                                // copio la riga child calcolata sul dt destinazione, così vado ogni volta ad incrementare le righe.
-                                // nel successivo .then della catena il dt sarà modificato
-                                _.forIn(childTable.columns,
-                                    /**
-                                     * @param {DataColumn} childCol
-                                     * @param {string} childColName
-                                     */
-                                    function (childCol, childColName) {
-                                        if (rel.childCols.some( c => c === childColName )) return true; // continuo nel ciclo
-                                        metaChild.insertCopyColumn(childCol, childSourceRow, newChildRow);
-                                    });
-                                return recusiveNewCopyChilds(newChildRow, childSourceRow);
-                            });
-
-                        });
-
-                        // inserisco array di deferred , cioè uno per ogni relazione di cui eventualmente devo vedere i figli
-                        allNewChildRowDeferred.push(chain);
-                    });
-
-                }); // chiude primo for sulle relazioni
-
-            return Deferred.when.apply(Deferred, allNewChildRowDeferred);
-        }
 
         if (freeExports && freeModule) {
             // Export for a browser or Rhino.

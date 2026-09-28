@@ -175,6 +175,7 @@
                         "<strong>server: </strong>" + getVar(appMeta.security.sysEnv.server) + "<BR>" +
                         "<strong>user: </strong>" + getVar(appMeta.security.sysEnv.user) + "<BR>" +
                         "<strong>idreg: </strong>" + getVar(appMeta.security.usrEnv.idreg) + "<BR>" +
+                        "<strong>idman: </strong>" + getVar(appMeta.security.usrEnv.idman) + "<BR>" +
                         "<strong>forename: </strong>" + getVar(appMeta.security.usrEnv.forename) + "<BR>" +
                         "<strong>surname: </strong>" + getVar(appMeta.security.usrEnv.surname) + "<BR>" +
                         "<strong>groupList: </strong>" + getVar(appMeta.security.usrEnv.usergrouplist) + "<BR>";
@@ -260,7 +261,8 @@
                         const jsonViewer = new JSONViewer();
                         $("#"+jsondsid).append(jsonViewer.getContainer());
                         const json = getDataUtils.getJsonFromJsDataSet(mp.state.DS, true);
-                        jsonViewer.showJSON(JSON.parse(json), null, 1);
+                        //jsonViewer.showJSON(JSON.parse(json), null, 1);
+                        jsonViewer.showJSON(json, null, 1);
                     },
                     close: function(event, ui) {
                         $(this).dialog("close");

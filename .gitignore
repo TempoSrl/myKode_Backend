@@ -6,3 +6,4 @@ config
 datasets
 uploads
 client/bower_components
+*.bak

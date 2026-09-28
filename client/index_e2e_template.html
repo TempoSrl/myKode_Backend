@@ -1,0 +1,506 @@
+﻿<!DOCTYPE html>
+<html lang="it-it">
+<head>
+
+	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+	<meta http-equiv="Pragma" content="no-cache" />
+	<meta http-equiv="Expires" content="0" />
+
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+
+	<meta name="author" content="">
+	<title>XXXApp</title>
+
+	<!-- bower:css -->
+	<link rel="stylesheet" href="bower_components/jquery-ui/themes/base/jquery-ui.min.css" />
+	<link rel="stylesheet" href="bower_components/jstree/dist/themes/default/style.min.css" />
+	<link rel="stylesheet" href="bower_components/fullcalendar/dist/fullcalendar.min.css" />
+	<link rel="stylesheet" href="bower_components/jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.css" />
+	<!-- endbower -->
+
+	<!-- INIZIO stili aggiuntivi librerie terze parti-->
+	<link rel="stylesheet" href="bower_components/fullcalendar/dist/fullcalendar.print.min.css" media="print" />
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.css" rel="stylesheet" />
+
+	<!-- icone bandiere del mondo, utilizzate nel menù localizzazione -->
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.1.0/css/flag-icon.min.css" rel="stylesheet">
+
+	<!-- Stili aggiuntivi per jsTree -->
+	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.5/themes/default/style.min.css" />
+	<!-- FINE Stili per jsTree -->
+	<!-- FINE stili librerie terze parti -->
+
+	<!-- INIZIO stili framework-->
+	<!-- lib per visualizzazione json -->
+	<script src="components/styles/json/json-viewer.js"></script>
+	<link rel="stylesheet" href="components/styles/json/json-viewer.css">
+	<!-- FINE lib per visualizzazione json -->
+	<!-- FINE stili framework-->
+
+	<!-- INIZIO Stili della applicazione -->
+	<!--link rel="stylesheet" href="styles/italia/bootstrap-italia.min.css"-->
+	<!--link rel="stylesheet" href="styles/italia/italia-icon-font.css"-->
+	<link rel="stylesheet" href="components/styles/app.css">
+	<link rel="stylesheet" href="styles/custom.css">
+	<link rel="stylesheet" href="components/styles/jquery.toast.css">
+	<link rel="stylesheet" href="components/styles/select2.min.css">
+	<!-- FINE Stili della applicazione -->
+
+	<!-- bower:js -->
+	<!--script src="bower_components/jquery/dist/jquery.js"></script-->
+	<script src="bower_components/jquery-ui/jquery-ui.min.js"></script>
+	<script src="bower_components/bootstrap/dist/js/bootstrap.bundle.js"></script>
+	<script src="bower_components/font-awesome/js/all.min.js"></script>
+	<script src="bower_components/jstree/dist/jstree.js"></script>
+	<script src="bower_components/json3/lib/json3.js"></script>
+	<!--script src="bower_components/es5-shim/es5-shim.js"></script-->
+	<!--script src="bower_components/lodash/lodash.js"></script-->
+	<script src="bower_components/observe-js/src/observe.js"></script>
+	<script src="bower_components/moment/min/moment.min.js"></script>
+	<script src="bower_components/fullcalendar/dist/fullcalendar.js"></script>
+	<script src="bower_components/fullcalendar/dist/locale-all.js"></script>
+	<script src="bower_components/jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.js"></script>
+	<script src="bower_components/jqueryui-timepicker-addon/dist/i18n/jquery-ui-timepicker-addon-i18n.js"></script>
+	<!-- endbower -->
+
+	<!-- expand:metadata_thirdpart -->
+	<script src="components/metadata/thirdpart/jsPDF.min.js"></script>
+	<!--script src="components/metadata/thirdpart/chart.min.js"></script>
+	<script src="components/metadata/thirdpart/gauge.js"></script>
+
+	<script src="components/metadata/thirdpart/jspdf.plugin.autotable.js"></script>
+	<script src="components/metadata/thirdpart/jspdf.umd.min.js"></script-->
+	<!-- endexpand:metadata_thirdpart -->
+
+	<!-- INIZIO librerie terze parti-->
+	<script src="components/utility/jquery.toast.js"></script>
+	<script src="components/utility/select2.min.js"></script>
+
+	<!-- read excel -->
+	<!--script src="https://unpkg.com/xlsx/dist/shim.min.js"></script>
+	<script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script-->
+
+	<!-- External files for exporting -->
+	<script src="https://www.igniteui.com/js/external/FileSaver.js"></script>
+	<script src="https://www.igniteui.com/js/external/Blob.js"></script>
+
+	<!--script type="text/javascript" src="https://cdn-na.infragistics.com/igniteui/2020.1/latest/js/infragistics.core.js"></script>
+	<script type="text/javascript" src="https://cdn-na.infragistics.com/igniteui/2020.1/latest/js/modules/infragistics.ext_core.js"></script>
+	<script type="text/javascript" src="https://cdn-na.infragistics.com/igniteui/2020.1/latest/js/modules/infragistics.ext_collections.js"></script>
+	<script type="text/javascript" src="https://cdn-na.infragistics.com/igniteui/2020.1/latest/js/modules/infragistics.ext_text.js"></script>
+	<script type="text/javascript" src="https://cdn-na.infragistics.com/igniteui/2020.1/latest/js/modules/infragistics.ext_io.js"></script>
+	<script type="text/javascript" src="https://cdn-na.infragistics.com/igniteui/2020.1/latest/js/modules/infragistics.ext_ui.js"></script>
+	<script type="text/javascript" src="https://cdn-na.infragistics.com/igniteui/2020.1/latest/js/modules/infragistics.documents.core_core.js"></script>
+	<script type="text/javascript" src="https://cdn-na.infragistics.com/igniteui/2020.1/latest/js/modules/infragistics.ext_collectionsextended.js"></script>
+	<script type="text/javascript" src="https://cdn-na.infragistics.com/igniteui/2020.1/latest/js/modules/infragistics.excel_core.js"></script>
+	<script type="text/javascript" src="https://cdn-na.infragistics.com/igniteui/2020.1/latest/js/modules/infragistics.ext_threading.js"></script>
+	<script type="text/javascript" src="https://cdn-na.infragistics.com/igniteui/2020.1/latest/js/modules/infragistics.ext_web.js"></script>
+	<script type="text/javascript" src="https://cdn-na.infragistics.com/igniteui/2020.1/latest/js/modules/infragistics.xml.js"></script>
+	<script type="text/javascript" src="https://cdn-na.infragistics.com/igniteui/2020.1/latest/js/modules/infragistics.documents.core_openxml.js"></script>
+	<script type="text/javascript" src="https://cdn-na.infragistics.com/igniteui/2020.1/latest/js/modules/infragistics.excel_serialization_openxml.js"></script-->
+
+	<!-- APP Seg + fmw mdlw -->
+	<!--mdlw-bundle-file-->
+
+	<!-- expand:metacomponents -->
+	<!--script src="components/metadata/jsDataQuery.js"></script-->
+	<!--script src="components/metadata/jsDataSet.js"></script-->
+	<!--script src="components/metadata/MetaApp.js"></script-->
+	<script src="components/metadata/Enum.js"></script>
+	<script src="components/metadata/LocalResource.js"></script>
+	<!--script src="components/metadata/Config.js"></script-->
+	<!--script src="components/metadata/Logger.js"></script-->
+	<script src="components/metadata/DbProcedureMessage.js"></script>
+	<!--script src="components/metadata/Routing.js"></script-->
+	<!--script src="components/metadata/EventManager.js"></script-->
+	<!--script src="components/metadata/utils.js"></script-->
+	<script src="components/metadata/GetDataUtils.js"></script>
+	<script src="components/metadata/ConnWebService.js"></script>
+	<script src="components/metadata/ConnWebSocket.js"></script>
+	<script src="components/metadata/Connection.js"></script>
+	<script src="components/metadata/MetaModel.js"></script>
+	<script src="components/metadata/GetData.js"></script>
+	<script src="components/metadata/Security.js"></script>
+	<script src="components/metadata/AuthManager.js"></script>
+	<script src="components/metadata/PostData.js"></script>
+	<script src="components/metadata/BootstrapContainerTab.js"></script>
+	<script src="components/metadata/FormProcedureMessages.js"></script>
+	<script src="components/metadata/LoaderControl.js"></script>
+	<script src="components/metadata/ModalLoaderControl.js"></script>
+	<script src="components/metadata/ListManager.js"></script>
+	<script src="components/metadata/ListManagerCalendar.js"></script>
+	<script src="components/metadata/CssDefault.js"></script>
+	<script src="components/metadata/TypedObject.js"></script>
+	<script src="components/metadata/MetaPageState.js"></script>
+	<script src="components/metadata/HelpForm.js"></script>
+	<script src="components/metadata/CheckBoxListControl.js"></script>
+	<script src="components/metadata/GridControl.js"></script>
+	<script src="components/metadata/GridControlX.js"></script>
+	<script src="components/metadata/GridControlXMultiSelect.js"></script>
+	<script src="components/metadata/ListManagerMultiSelect.js"></script>
+	<script src="components/metadata/GridControlXChild.js"></script>
+	<script src="components/metadata/GridControlXEdit.js"></script>
+	<script src="components/metadata/CalendarControl.js"></script>
+	<script src="components/metadata/SliderControl.js"></script>
+	<script src="components/metadata/MetaData.js"></script>
+	<script src="components/metadata/MetaPage.js"></script>
+	<script src="components/metadata/ComboManager.js"></script>
+	<script src="components/metadata/MainToolBarManager.js"></script>
+	<script src="components/metadata/DropDownGridControl.js"></script>
+	<script src="components/metadata/GridControlXScrollable.js"></script>
+	<script src="components/metadata/ListManagerScrollable.js"></script>
+	<script src="components/metadata/TreeNode.js"></script>
+	<script src="components/metadata/TreeNode_Dispatcher.js"></script>
+	<script src="components/metadata/TreeViewManager.js"></script>
+	<script src="components/metadata/TreeNodeUnLeveled.js"></script>
+	<script src="components/metadata/TreeNodeLeveled.js"></script>
+	<script src="components/metadata/TreeNodeUnLeveled_Dispatcher.js"></script>
+	<script src="components/metadata/TreeNodeLeveled_Dispatcher.js"></script>
+	<script src="components/metadata/tree/SimpleUnLeveled_TreeNode.js"></script>
+	<script src="components/metadata/tree/SimpleUnLeveled_TreeNode_Dispatcher.js"></script>
+	<script src="components/metadata/tree/SimpleUnLeveled_TreeViewManager.js"></script>
+	<script src="components/metadata/tree/TreeControl.js"></script>
+	<script src="components/metadata/Attachment.js"></script>
+	<!--script src="components/metadata/BootstrapModal.js"></script-->
+	<script src="components/metadata/ConfigDev.js"></script>
+	<script src="components/metadata/GridMultiSelectControl.js"></script>
+	<script src="components/metadata/ModalForm.js"></script>
+	<script src="components/metadata/MultiSelectControl.js"></script>
+	<script src="components/metadata/PdfExport.js"></script>
+	<script src="components/metadata/UploadControl.js"></script>
+	<script src="components/metadata/UploadControlWin.js"></script>
+	<script src="components/metadata/tachimetro/TachimetroControl.js"></script>
+	<script src="components/metadata/graph/GraphControl.js"></script>
+	<!-- endexpand:metacomponents -->
+
+	<script src="MetaXXXApp.js"></script>
+
+	<!-- classi derivazione del framework -->
+
+	<script src="meta/MetaXXXData.js"></script>
+
+	<!-- expand:metadata -->
+	<script src="meta/meta_attach.js"></script>
+	<script src="meta/meta_mandate.js"></script>
+	<script src="meta/meta_mandatedetail.js"></script>
+	<script src="meta/meta_mandatekind.js"></script>
+	<script src="meta/meta_mandateview.js"></script>
+	<script src="meta/meta_menuweb.js"></script>
+	<!-- endexpand:metadata -->
+
+
+	<!--script src="pages/MetaXXXPage.js"></script-->
+
+	<!-- expand:pages -->
+	<script src="pages/MetaXXXPage.js"></script>
+	<script src="pages/mandate_default.js"></script>
+	<script src="pages/mandatedetail_detail.js"></script>
+	<script src="pages/menuweb_tree.js"></script>
+	<script src="pages/Menuweb_TreeNode_Dispatcher.js"></script>
+	<script src="pages/Menuweb_TreeNode.js"></script>
+	<script src="pages/Menuweb_TreeViewManager.js"></script>
+	<!-- endexpand:pages -->
+
+	<script src="custom.js"></script>
+	<script src="cambioruolo.js"></script>
+	<script src="components/i18n/LocalResourceIt.js"></script>
+	<!--script src="Localization.js"></script-->
+	<script src="assets/i18n/LocalResourceIt.js"></script>
+	<script src="assets/i18n/LocalResourceEn.js"></script>
+	<script src="config/appMainConfig.js"></script>
+
+	<!-- utility per costruzione del menu -->
+	<script src="menubuilder/menuBuilder.js"></script>
+
+	<script src="appMain.js"></script>
+
+
+	<!-- dopo load della pagina lancio main -->
+	<script>
+		$(document).ready(function () {
+			appMeta.appMain.init();
+			appMeta.appMain.checkSSORedirect();
+			appMeta.appMain.checkResetPwd();
+		});
+	</script>
+
+</head>
+
+<body>
+
+<div id="appRoot">
+
+	<!-- Menu di navigazione INIZIO -->
+	<div id="menu">
+		<nav class="navbar-institutional navbar navbar-expand-lg navbar-dark">
+			<div class="container">
+				<a class="navbar-brand" href="#">
+					<img class="portale_brand_logo_id" src="" alt="logo" style="max-height: 40px; height: auto; width: auto;/>
+					<span class="portale_brand_name_id">MetaXXXApp</span>
+				</a> <button class="navbar-toggler navbar-toggler-right border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbar11">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+				<div class="collapse navbar-collapse" id="navbar11">
+					<!-- inserisco  mdlmainmenu punto di ancoraggio di tutto il menù-->
+					<ul class="navbar-nav mr-auto" id="mdl_mainmenu_id">
+						<div id="mdl_menuloader_id" style="display:none">
+							<span class="fa fa-spinner fa-spin fa-2x"></span>
+						</div>
+					</ul>
+					<ul class="navbar-nav ml-auto" style="cursor: pointer;">
+						<!--<li class="nav-item"> <a class="nav-link" href="#" id="menu_search_btn_id">Cerca</a> </li>
+                        <li class="nav-item"> <a class="nav-link" href="#" id="menu_info_btn_id">Info</a> </li>
+                        <li class="nav-item"> <a class="nav-link" href="#" id="menu_guide_btn_id">Guida</a> </li>-->
+						<!-- Inizio menù scelta lingua -->
+						<li class="nav-item">
+							<a class="nav-link dropdown-toggle" id="langctrl_id" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+								<span class="flag-icon flag-icon-it" data-lang="it"></span> Italian
+							</a>
+							<div class="dropdown-menu">
+								<!--<a class="dropdown-item"><span class="flag-icon flag-icon-fr" data-lang="fr"> </span>  French</a>-->
+								<a class="dropdown-item"><span class="flag-icon flag-icon-gb" data-lang="en"> </span>  English</a>
+								<!--<a class="dropdown-item"><span class="flag-icon flag-icon-ru" data-lang="ru"> </span>  Russian</a>-->
+							</div>
+						</li>
+						<!-- Fine menù scelta lingua -->
+					</ul> <!--<a id="logoutButton" class="btn btn-primary navbar-btn ml-md-2">Esci</a>-->
+					<!--<button id="gotoRegister_id" type="button" class="btn btn-primary">Registrati</button>-->
+					<button id="gotoLogin_id" type="button" class="btn btn-primary">Accedi</button>
+					<button id="logoutButton" type="button" class="btn btn-primary">Esci</button>
+					<a class="navbar-brand" href="#">
+						<img class="tempo_brand_logo_id" src="" alt="logo" style="max-height: 40px; height: auto; width: auto;"/>
+					</a>
+				</div>
+			</div>
+		</nav>
+	</div>
+	<!-- FINE Menu di navigazione -->
+	<!-- INIZIO toolbar -->
+	<div id="toolbar"></div>
+	<!-- FINE toolbar -->
+	<!-- form di login per ora in spa -->
+	<div id="login" class="container" style="display: none">
+
+		<form>
+			<div class="row">
+				<div class="col-8 offset-2 col-lg-4 offset-lg-4 col-md-6 offset-md-3">
+					<h4>Log in</h4>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-8 offset-2 col-lg-4 offset-lg-4 col-md-6 offset-md-3">
+					<input type="text" class="form-control" placeholder="Username" required="required" id="username">
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-8 offset-2 col-lg-4 offset-lg-4 col-md-6 offset-md-3 oneRow">
+					<input type="password" class="form-control" placeholder="Password" required="required" id="password0"
+						   style="border-bottom-right-radius: 0 !important; border-top-right-radius: 0; !important">
+					<button type="button" class="btn btn-primary" id="btnshowPassword0"
+							style="border-bottom-left-radius: 0; border-top-left-radius: 0; border-top-right-radius: 4px; border-bottom-right-radius: 4px;">
+						<i class="fa fa-eye mr-1" id="iconPwd0"></i>
+					</button>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-8 offset-2 col-lg-4 offset-lg-4 col-md-6 offset-md-3">
+					<select id="yearsComboId" class="custom-select d-block w-100"></select>
+				</div>
+			</div>
+		</form>
+
+		<div class="row align-items-center justify-content-center">
+			<button type="submit" class="btn btn-primary" id="loginButton">Login</button>
+		</div>
+
+		<div class="row align-items-center justify-content-center">
+			<a href="javascript:void(0)" class="btn-lg btn btn-link" id="resetPwdMailId">Password dimenticata?</a>
+		</div>
+
+	</div>
+	<!--fine form di login -->
+
+	<div id="loginldap" class="container" style="display: none">
+
+		<form>
+			<div class="row">
+				<div class="col-8 offset-2 col-lg-4 offset-lg-4 col-md-6 offset-md-3">
+					<h4>Login LDAP</h4>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-8 offset-2 col-lg-4 offset-lg-4 col-md-6 offset-md-3">
+					<input type="text" class="form-control" placeholder="Email" required="required" id="emailldap">
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-8 offset-2 col-lg-4 offset-lg-4 col-md-6 offset-md-3 oneRow">
+					<input type="password" class="form-control" placeholder="Password" required="required" id="password4"
+						   style="border-bottom-right-radius: 0 !important; border-top-right-radius: 0; !important">
+					<button type="button" class="btn btn-primary" id="btnshowPassword4"
+							style="border-bottom-left-radius: 0; border-top-left-radius: 0; border-top-right-radius: 4px; border-bottom-right-radius: 4px;">
+						<i class="fa fa-eye mr-1" id="iconPwd4"></i>
+					</button>
+				</div>
+			</div>
+			<div class="row" style="display: none">
+				<div class="col-8 offset-2 col-lg-4 offset-lg-4 col-md-6 offset-md-3">
+					<select id="yearsComboIdLDAP" class="custom-select d-block w-100"></select>
+				</div>
+			</div>
+		</form>
+
+		<div class="row align-items-center justify-content-center">
+			<button type="submit" class="btn btn-primary" id="loginButtonLDAP">Login LDAP</button>
+		</div>
+
+	</div>
+	<!--fine form di login ldap -->
+
+	<div class="row align-items-center justify-content-center">
+		<button type="submit" class="btn btn-primary" id="redirectSSO">Autenticazione Single Sign on</button>
+	</div>
+
+	<!-- INIZIO reset password -->
+	<div class="container">
+
+		<div id="resetPasswordMailId" style="display: none">
+			<div class="row">
+				<div class="col-8 offset-2 col-lg-4 offset-lg-4 col-md-6 offset-md-3">
+					<h4>Recupero password - inserisci mail</h4>
+					<sup>Ti verrà inviata una mail con il link per il recupero password</sup>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-8 offset-2 col-lg-4 offset-lg-4 col-md-6 offset-md-3">
+					<input type="text" class="form-control" placeholder="Email" required="required" id="emailId"
+						   style="border-bottom-right-radius: 0 !important; border-top-right-radius: 0; !important">
+				</div>
+			</div>
+
+			<div class="row align-items-center justify-content-center">
+				<button type="submit" class="btn btn-primary" id="resetPwdMailButton">Recupera password</button>
+			</div>
+		</div>
+
+		<div id="nuovaPasswordFormdId" style="display: none">
+			<div>
+				<div class="row">
+					<div class="col-8 offset-2 col-lg-4 offset-lg-4 col-md-6 offset-md-3">
+						<h4>Recupero password</h4>
+						<h6>Inserisci una nuova password</h6>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-8 offset-2 col-lg-4 offset-lg-4 col-md-6 offset-md-3 oneRow">
+						<input type="password" class="form-control" placeholder="Nuova password" required="required" id="password1"
+							   style="border-bottom-right-radius: 0 !important; border-top-right-radius: 0; !important">
+						<button type="button" class="btn btn-primary" id="btnshowPassword1"
+								style="border-bottom-left-radius: 0; border-top-left-radius: 0; border-top-right-radius: 4px; border-bottom-right-radius: 4px;">
+							<i class="fa fa-eye mr-1" id="iconPwd1"></i>
+						</button>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-8 offset-2 col-lg-4 offset-lg-4 col-md-6 offset-md-3 oneRow">
+						<input type="password" class="form-control" placeholder="Ripeti Password" required="required" id="password2"
+							   style="border-bottom-right-radius: 0 !important; border-top-right-radius: 0; !important">
+						<button type="button" class="btn btn-primary" id="btnshowPassword2"
+								style="border-bottom-left-radius: 0; border-top-left-radius: 0; border-top-right-radius: 4px; border-bottom-right-radius: 4px;">
+							<i class="fa fa-eye mr-1" id="iconPwd2"></i>
+						</button>
+					</div>
+				</div>
+
+				<div class="row align-items-center justify-content-center">
+					<button type="submit" class="btn btn-primary" id="bewPwdButton">Imposta nuova password</button>
+				</div>
+
+			</div>
+		</div>
+	</div>
+	<!-- FINE reset password -->
+
+	<!-- INIZIO MetaPage -->
+	<div class="container" id="metaRoot">
+		<BR>
+	</div>
+	<!-- FINE MetaPage -->
+	<br />
+	<br />
+	<!-- INIZIO footer -->
+	<div class="footer">
+		<div class="container">
+			<p class="text-center">Powered by myKode</p>
+		</div>
+	</div>
+	<!-- FINE footer -->
+
+</div>
+
+</body>
+
+
+<script>
+
+
+	var observer = new MutationObserver(handleMutations);
+	var observerConfig = { childList: true, attributes: false, subtree: true };
+	var targetNode = document;
+
+	observer.observe(targetNode, observerConfig);
+
+	// Rileva quando viene aggiunta una nuova porzione di HTML alla pagina
+	function handleMutations(mutationsList, observer) {
+		mutationsList.forEach(function(mutation) {
+			// Verifica il tipo di mutazione
+			if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+				// Almeno un nodo è stato aggiunto
+				// Esegui le azioni desiderate
+				mutation.addedNodes.forEach(applyDatePickerToNode)
+
+			}
+		});
+	}
+
+	function applyDatePickerToNode(newNode){
+		//console.log('Nodo aggiunto:', newNode);
+		// Verifica se il nodo appena inserito è del tipo desiderato (ad esempio, un elemento div)
+		if (newNode.nodeType === Node.ELEMENT_NODE && newNode.tagName === 'DIV') {
+			let parentElement = newNode.parentNode;
+			if (parentElement && parentElement.id === 'metaRoot') {
+				// Trova tutti gli elementi con l'attributo datePickerFormat nella porzione aggiunta
+				let newElementsWithDatePicker = $(newNode).find('[data-datePickerFormat]');
+
+				// Applica il datepicker a ciascun elemento trovato
+				newElementsWithDatePicker.each(function() {
+					let datePickerFormat = $(this).data().datepickerformat;
+					$(this).datepicker({dateFormat: datePickerFormat});
+				});
+			}
+		}
+
+		// Verifica se il nodo appena inserito è del tipo desiderato (ad esempio, un elemento div)
+		if (newNode.nodeType === Node.ELEMENT_NODE && newNode.tagName === 'DIV') {
+			let parentElement = newNode.parentNode;
+			if (parentElement && parentElement.id === 'metaRoot') {
+				// Trova tutti gli elementi con l'attributo datePickerFormat nella porzione aggiunta
+				let newElementsWithDateTimePicker = $(newNode).find('[data-dateTimePickerFormat]');
+
+				// Applica il datepicker a ciascun elemento trovato
+				newElementsWithDateTimePicker.each(function() {
+					let datePickerFormat = $(this).data().datetimepickerformat;
+					$(this).datetimepicker({dateFormat: datePickerFormat});
+				});
+			}
+		}
+
+	}
+
+</script>
+
+</html>
+

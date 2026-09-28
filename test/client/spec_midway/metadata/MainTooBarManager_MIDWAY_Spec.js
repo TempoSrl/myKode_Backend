@@ -1,6 +1,6 @@
 "use strict";
 
-describe("MainTooBarManager",
+fdescribe("MainTooBarManager",
     function () {
         var MetaPage = appMeta.MetaPage;
         var HelpForm = appMeta.HelpForm;
@@ -87,7 +87,7 @@ describe("MainTooBarManager",
                   
                 });
 
-                it("MainToolBarManager maindelete call correct methods, freshbuttons work fine",function (done) {
+                fit("MainToolBarManager maindelete call correct methods, freshbuttons work fine",function (done) {
 
                     // memorizzo funz commandEnabled originale. Così non influenzo test successivi
                     var originalCommandEnabled =  MetaPage.prototype.commandEnabled;
@@ -103,6 +103,10 @@ describe("MainTooBarManager",
                     spyOn(metapage, "doMainCommand").and.callThrough();
                     
                     state.setInsertState();
+                    expect($("#search1").is(":visible")).toBe(false);
+                    expect($("#insert1").is(":visible")).toBe(false);
+                    expect($("#mainsave1").is(":visible")).toBe(false);
+                    expect($("#maindelete1").is(":visible")).toBe(false);
 
                     var s = stabilizeToCurrent();
                     s.then(function () {
@@ -120,7 +124,7 @@ describe("MainTooBarManager",
                         done();
                     });
                     
-                    $('#maindelete1').click(); // simulo click, vedos e metodo viene chiamato
+                    $('#maindelete1').click(); // simulo click, vedo s e metodo viene chiamato
                    
                 });
 

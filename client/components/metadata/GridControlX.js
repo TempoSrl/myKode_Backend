@@ -217,36 +217,38 @@
        * @description SYNC
        * Removes all the events from grid rows
        */
-      removeEvents: function () {
-         // questo selettore evita di agganciare glie venti sull'header
-         this.mytable.find("tr:not(:has(>th)):not([data-mdlgrouped])").off("click", _.partial(this.rowClickEv, this));
-         this.mytable.find("tr:not(:has(>th)):not([data-mdlgrouped])").off("dblclick", _.partial(this.rowDblClickEv, this));
-         if (this.editInPlaceColumns) {
-            this.mytable.find("tr:not(:has(>th)):not([data-mdlgrouped]):not(.table-in-cell-tr) > td:not(.mdlw_tdclickable)").off("click", _.partial(this.cellEdit, this));
-         }
+       removeEvents: function () {
+           if (this.mytable) {
+               // questo selettore evita di agganciare glie venti sull'header
+               this.mytable.find("tr:not(:has(>th)):not([data-mdlgrouped]):not(.table-in-cell-tr)").off("click");
+               this.mytable.find("tr:not(:has(>th)):not([data-mdlgrouped]):not(.table-in-cell-tr)").off("dblclick");
+               if (this.editInPlaceColumns) {
+                   this.mytable.find("tr:not(:has(>th)):not([data-mdlgrouped]):not(.table-in-cell-tr) > td:not(.mdlw_tdclickable)").off("click");
+               }
 
-         let self = this;
+               let self = this;
 
-         // rimuove eventi per bottoni recursiveCollapse e recursiveExpand in caso di grouping
+               // rimuove eventi per bottoni recursiveCollapse e recursiveExpand in caso di grouping
 
-         this.mytable.find(".fa-plus-square")
-            .each(function () {
-               $(this).parent().off("click", _.partial(self.recursiveExpand, self, $(this).closest("tr").attr("id")));
-            });
+               this.mytable.find(".fa-plus-square")
+                   .each(function () {
+                       $(this).parent().off("click");
+                   });
 
-         this.mytable.find(".fa-minus-square")
-            .each(function () {
-               $(this).parent().off("click", _.partial(self.recursiveCollapse, self, $(this).closest("tr").attr("id")));
-            });
+               this.mytable.find(".fa-minus-square")
+                   .each(function () {
+                       $(this).parent().off("click");
+                   });
 
-         // rimuove eventi bottoni di editing di riga
+               // rimuove eventi bottoni di editing di riga
 
-         this.mytable.find("[data-mdleditbtn]").off("click", _.partial(self.editClick, self));
+               this.mytable.find("[data-mdleditbtn]").off("click");
 
-         this.mytable.find("[data-mdldeletebtn]").off("click", _.partial(self.deleteClick, self));
+               this.mytable.find("[data-mdldeletebtn]").off("click");
 
-         this.mytable.find("[data-mdlunlinkbtn]").off("click", _.partial(self.unlinkClick, self));
-
+               this.mytable.find("[data-mdlunlinkbtn]").off("click");
+               
+           }
       },
 
       /**
@@ -413,19 +415,14 @@
 
       assignColumnsStyle:function() {
          let self= this;
-         let applyClass = function(tdOrTh) {
-            _.forEach($(tdOrTh, self.mytable), function (curr) {
-               let mdlcolumnname = $(curr).data("mdlcolumnname");
-               if (!mdlcolumnname || self.jsonOrNipoti[mdlcolumnname]) {
-                  // $(curr).addClass("mdl-cell-size-default");
-               } else {
-                  $(curr).addClass("mdl-cell-size-calc");
-               }
-            });
-         };
-
-         applyClass('th');
-         applyClass('td');
+          $(self.mytable).find('td, th').each(function (curr) {
+              let mdlcolumnname = $(curr).data("mdlcolumnname");
+            if (!mdlcolumnname || self.jsonOrNipoti[mdlcolumnname]) {
+               // $(curr).addClass("mdl-cell-size-default");
+            } else {
+                $(curr).addClass("mdl-cell-size-calc");
+            }
+         });
 
       },
 
@@ -669,8 +666,7 @@
       addTableEmptyRow: function () {
          let numColumnToAdd = 4; // Possiamo dare un numero maggiore di colspan (che non hanno effetto) piuttosto che minore
          let colsNum = this.orderedCols.length + numColumnToAdd;
-         let $tr = $('<tr><td align="center" class="norow" colspan=' + colsNum + '>' +
-                  appMeta.localResource.dictionary.gridEmpty + '</td></tr>');
+         let $tr = $('<tr><td align="center" class="norow" colspan=' + colsNum + '>' + localResource.gridEmpty + '</td></tr>');
          this.mytable.append($tr);
       },
 
@@ -1038,7 +1034,7 @@
                let els = co.split(",");
                if (els.length !== 3) logger.log(logType.WARNING, "wrong conditional formatting on grid: " + self.dataTable.name);
                let cname = els[0].toLowerCase();
-               if (!self.conditionallookupArray[cname]) self.conditionallookupArray[els[0]] = [];
+                if (!self.conditionallookupArray[cname]) self.conditionallookupArray[cname] = [];
                self.conditionallookupArray[cname].push({ valuemember: els[1], displaymember: els[2] });
             });
          }
@@ -1963,7 +1959,7 @@
 
             // solo le righe di livello 1 sono visibili, oppure nel caso ci siano colonne di gruppo in input
             self.addChildElement($tr, $td, tdGroupValue);
-            if (groupLev !== 1 && !self.groupedColumnsInput) $tr.hide();
+            // if (groupLev !== 1 && !self.groupedColumnsInput) $tr.hide();
 
             // inserisco icona per espandere
             // a seconda del gruppo metto scostamento a sinistra per costruire una struttura a livelli
@@ -2915,6 +2911,12 @@
          return html;
       },
 
+       convertDecimalSeparator: function (htmlString) {
+           return htmlString.replace(/>(\d+\.\d+)</g, (match, number) => {
+               return `>${number.replace('.', ',')}<`;
+           });
+       },
+
       /**
        * @method gridHtmlToExcel
        * @private
@@ -2955,8 +2957,8 @@
                fRemoveByIndex("th", 1);
             } else {
                // altrimenti ne rimuovo almeno una, perchè è quella con il bottone excel stessa. dove poi sotto abbiamo edit o delete
-               fRemoveByIndex("td", 0);
-               fRemoveByIndex("th", 0);
+               //fRemoveByIndex("td", 0); //COMMENTATO PERCHè MI SVUOTA LE CELLE RAGGRUPPATE
+               //fRemoveByIndex("th", 0);
             }
 
          });
@@ -2972,7 +2974,11 @@
             $btn.remove(); //Rimuovo il bottone dalla lista da stampare
          });
 
+          //converto i caratteri accentati e speciali con la codifica html
          let gridhtml = that.replaceSpecialCharacters($(gridcloned).html());
+          //converto i decimali con la , anzichè il .
+          gridhtml = that.convertDecimalSeparator(gridhtml);
+          gridhtml = gridhtml.replace(/>'(.*?)'<\/td>/g, ">$1</td>");
 
          // creo excel direttamente dal table
          let tab_text = '<html xmlns:x="urn:schemas-microsoft-com:office:excel">';

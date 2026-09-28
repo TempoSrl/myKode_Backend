@@ -47,7 +47,7 @@ async function getNewRowCopyChilds(req,res,next){
     // FINE calcolo ds outDs nuovo con i dati del client
     //********************************************************************************
 
-    /********** DS e riga principaledi input da copiare ******************************/
+    /********** DS e riga principale di input da copiare ******************************/
     // 1. deserializzo strutture dati
     let DSin = getDataUtils.getJsDataSetFromJson(req.body.dsIn);
 
@@ -63,7 +63,7 @@ async function getNewRowCopyChilds(req,res,next){
 
     let metaParent = ctx.getMeta(tableName);
     try {
-        await metaParent.recusiveNewCopyChilds(newRowParent,primaryRowCopy);
+        await metaParent.recursiveNewCopyChilds(newRowParent,primaryRowCopy);
         res.json(getDataUtils.getJsonFromJsDataSet(outDs,false));
     }
     catch (err){

@@ -34,6 +34,8 @@
         getSpecificChild : "getSpecificChild",
         setUsrEnv: "setUsrEnv",
         doReadValue: "doReadValue",
+        getMapping: "getMapping",
+        getDefaultRedirections: "getDefaultRedirections",
         customServerMethod: "customServerMethod",
 
         read : "read",
@@ -59,7 +61,8 @@
         ExpiredCredential : "ExpiredCredential",
         ExpiredCredentialSSO: "ExpiredCredentialSSO",
         ExpiredSession : "ExpiredSession",
-        BadCredential : "BadCredential",
+        BadCredential: "BadCredential",
+        LDAPServerUnavailable: "LDAPServerUnavailable",
         DataNotPermitted : "DataNotPermitted",
         TokenEmpty: "TokenEmpty",
         UserNotSecurity: "UserNotSecurity",
@@ -115,9 +118,7 @@
          */
         getMethod:function (method) {
             var ss = this.services[method];
-            if (!ss) {
-                return ss;
-            }
+            if (!ss) return ss;
             let service = _.clone(ss);
             service.url = this.backendUrl+appMeta.serviceBasePath +service.url;
             return service;
@@ -202,7 +203,8 @@
             this.registerService(methodEnum.customServerMethod, 'POST', 'data', false, true);
             this.registerService(methodEnum.setUsrEnv, 'POST', 'data', false, true);
             this.registerService(methodEnum.doReadValue, 'POST', 'data', false, true);
-
+            this.registerService(methodEnum.getMapping, 'GET', 'data', false, true);
+            this.registerService(methodEnum.getDefaultRedirections, 'POST', 'data', false, true);
           
 
             // gestori attachment

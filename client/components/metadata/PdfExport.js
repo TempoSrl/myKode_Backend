@@ -223,7 +223,7 @@
                     var tabPane = $(el).closest('.tab-pane');
                     if (tabPane.length) {
                         var id = tabPane.prop('id');
-                        var tab = $('[data-target="#' + id + '"]');
+                        var tab = $('[data-bs-target="#' + id + '"]');
                         if (id &&
                             tab.length &&
                             !self.tabs[id]) {
@@ -241,13 +241,15 @@
          */
         elementInTab:function(el) {
             // array di stringhe
-            var tabSelected = $('#tabspdfexport').val();
+            if ($('#tabspdfexport').val()) {
+                this.tabSelected = $('#tabspdfexport').val();
+            }
 
-            if (!tabSelected) {
+            if (!this.tabSelected) {
                 return false;
             }
 
-            if (tabSelected.includes(this.C_ALL_TABS)) {
+            if (this.tabSelected.includes(this.C_ALL_TABS)) {
                 return true;
             }
 
@@ -256,9 +258,9 @@
 
             if (tabPane.length) {
                 var id = tabPane.prop('id');
-                var dataTarget = $('[data-target="#' + id + '"]');
+                var dataTarget = $('[data-bs-target="#' + id + '"]');
                 if (id && dataTarget.length) {
-                    return tabSelected.includes(dataTarget.text());
+                    return this.tabSelected.includes(dataTarget.text());
                 }
             }
 
@@ -285,7 +287,7 @@
 
                         var tabPane = $(el).closest('.tab-pane');
                         var id = tabPane.prop('id');
-                        var dataTarget = $('[data-target="#' + id + '"]');
+                        var dataTarget = $('[data-bs-target="#' + id + '"]');
                         var tabKey = dataTarget.text();
 
                         if (ctrl) {
@@ -435,8 +437,14 @@
          * builds structure, print pdf and save the file.
          * @param that
          */
-        doExportPdf:function(that){
-            var waitingHandler = that.metaPage.showWaitingIndicator('attendi export pdf in corso');
+        doExportPdf:function(that, event, getFileInOutput){
+            if (!getFileInOutput) {
+                //caso 1: premuto il bottone di stampa
+                var waitingHandler = that.metaPage.showWaitingIndicator('attendi export pdf in corso');
+            } else {
+                //caso 2: chiamata da un metodo di export del pdf
+                that.tabSelected = [that.C_ALL_TABS]; //seleziono tutti i tab a prescindere
+            }
             that.sheetFormat = $('#selectSheetFormat').val(); // a1, a2 ..etc;
 
             that.initDoc();
@@ -451,9 +459,27 @@
 
             that.resetGlobalVar();
 
-            that.metaPage.hideWaitingIndicator(waitingHandler);
             var fileName = that.metaPage.name.split(/\s+/).join('') + '_' + moment().format('D_MMM_YYYY_HHmm') + '.pdf';
-            that.doc.save(fileName);
+
+            if (getFileInOutput) {
+                // 1. Ottieni il BLOB
+                var pdfBlob = that.doc.output('blob');
+
+                // 2. Crea un oggetto FILE (che è un Blob con un nome e una data)
+                // Questo costruttore è supportato in tutti i browser moderni
+                var fileObj = new File([pdfBlob], fileName, {
+                    type: "application/pdf",
+                    lastModified: new Date().getTime()
+                });
+
+                // 3. Restituisci direttamente l'oggetto File
+                return fileObj;
+
+            } else {
+                that.metaPage.hideWaitingIndicator(waitingHandler);
+
+                that.doc.save(fileName);
+            }
         },
 
         /**
@@ -622,6 +648,12 @@
             var value = '';
             if (rows.length) {
                 value = rows[0][columnName];
+            } else {
+                //sto rappresentando un campo di una tabella che non è la tabella principale (estendente o 1 a 1)
+                //siccome è una dropdowngrid la tabella corrispondentecontiene sempre solo 1 riga con il valore selezionato
+                if (this.metaPage.state.DS.tables[tableName].rows.length) {
+                    value = this.metaPage.state.DS.tables[tableName].rows[0][columnName];
+                }
             }
 
             row.push($(el).parent().parent().find('label').text());
@@ -679,7 +711,7 @@
             var tabPane = $(el).closest('.tab-pane');
             if (tabPane.length) {
                 var id = tabPane.prop('id');
-                var dataTarget = $('[data-target="#' + id + '"]');
+                var dataTarget = $('[data-bs-target="#' + id + '"]');
                 if (id && dataTarget.length) {
                     return dataTarget.text()
                 }
@@ -1103,6 +1135,20 @@
         // *************************************************************************************
         // *********************** START EXPORT FROM TEMPLATE **********************************
         // *************************************************************************************
+        hasUnsavedChanges: function (metaPage) {
+            const that = metaPage;
+            const primaryDataTable = that.getPrimaryDataTable();
+            const def = Deferred("warnUnsaved");
+            that.getFormData(true) //gets data without checks
+                .then(function () {
+                    appMeta.metaModel.removeFalseUpdates(metaPage.state.DS);
+                    metaPage.beforePost();
+                    let result = appMeta.metaModel.hasChanges(that.state.DS, primaryDataTable, that.state.sourceRow(), that.detailPage)
+                    return def.resolve(result);
+                });
+            return def.promise();
+
+        },
 
 
         /**
@@ -1114,78 +1160,81 @@
         exportToPdfFromTemplate:function (metaPage, dr) {
             let idAttach = dr.idattach,
                 idAttach_2 = dr.idattach_2;
-            if(!idAttach) {
-                console.error("Non specificato idattach");
-                return false;
-            }
-
             var self = this;
-            this.def = Deferred("PdfExport.exportToPdfFromtamplete");
-            this.metaPage = metaPage;
 
             var def = Deferred("download");
-            var token = appMeta.connection.getAuthToken();
-            var callConfigObj = appMeta.routing.getMethod('download');
-            var url = callConfigObj.url + '?idattach=' + idAttach;
-            var filename = 'default'; // Non utilizzato
-            var myInit = { method: callConfigObj.type,
-                headers : {'Authorization':  "Bearer " + token}};
 
-            fetch(url, myInit).then( function (response) {
-                filename = self.getFileNameFromContentDisposition(response.headers.get('content-disposition'));
-                return response.text();
-            }).then(function (htmlText) {
-                    let mytextReplaced = self.replacePlaceHolders(htmlText);
-                    
-                    let blobDownload, nomeDownload = 'stampa.';
-                    if(!idAttach_2) { // Singolo download stampa doc
-                        nomeDownload += 'doc';
-                        blobDownload = new Blob( [mytextReplaced], {type: 'application/vnd.ms-word;charset=utf-8'} );
-                        saveAs(blobDownload, nomeDownload);
-                    } else { // Stampa multipla, preparo zip
-                        nomeDownload += 'zip';
-                        // Scarico secondo template
-                        fetch(callConfigObj.url + '?idattach=' + idAttach_2, myInit)
-                        .then(function (response){
-                            //filename = self.getFileNameFromContentDisposition(response.headers.get('content-disposition'));
-                            return response.text();            
+            this.def = Deferred("PdfExport.exportToPdfFromtamplete");
+            if (!idAttach) {
+                console.error("Non specificato idattach");
+                return this.def.resolve();
+            }
+            this.hasUnsavedChanges(metaPage)
+                .then(function (hasChanges) {
+                    if (hasChanges) {
+                        return new appMeta.BootstrapModal(appMeta.localResource.alert,
+                            "Prima occorre salvare",
+                            [appMeta.localResource.ok],
+                            appMeta.localResource.dictionary.cancel,
+                            "Prima occorre salvare").show(metaPage)
+                            .then(function () {
+                                return metaPage.hideWaitingIndicator();
+                            })
+                            .then(function () {
+                                return self.def.resolve(null);
+                            });
+                    }
+                    else {
+                        self.def.resolve(null);
+                    }
+
+                    this.metaPage = metaPage;
+
+                    //var def = Deferred("download");
+                    var token = appMeta.connection.getAuthToken();
+                    var callConfigObj = appMeta.routing.getMethod('download');
+                    var url = callConfigObj.url + '?idattach=' + idAttach;
+                    var filename = 'default'; // Non utilizzato
+                    var myInit = { method: callConfigObj.type,
+                        headers : {'Authorization':  "Bearer " + token}};
+
+                    fetch(url, myInit)
+                        .then(function (response) {
+                        filename = self.getFileNameFromContentDisposition(response.headers.get('content-disposition'));
+                        return response.text();
                         })
                         .then(function (htmlText) {
-                            // Replace secondo template
-                            htmlText = self.replacePlaceHolders(htmlText);
+                            let mytextReplaced = self.replacePlaceHolders(htmlText);
+                    
+                            let blobDownload, nomeDownload = 'stampa.';
+                            if(!idAttach_2) { // Singolo download stampa doc
+                                nomeDownload += 'doc';
+                                blobDownload = new Blob( [mytextReplaced], {type: 'application/vnd.ms-word;charset=utf-8'} );
+                                saveAs(blobDownload, nomeDownload);
+                            } else { // Stampa multipla, preparo zip
+                                nomeDownload += 'zip';
+                                // Scarico secondo template
+                                fetch(callConfigObj.url + '?idattach=' + idAttach_2, myInit)
+                                .then(function (response){
+                                    //filename = self.getFileNameFromContentDisposition(response.headers.get('content-disposition'));
+                                    return response.text();            
+                                })
+                                .then(function (htmlText) {
+                                    // Replace secondo template
+                                    htmlText = self.replacePlaceHolders(htmlText);
 
-                            let hZip = new JSZip();
-                            hZip.file("stampa.doc", mytextReplaced);
-                            hZip.file("stampa_2.doc", htmlText);
-                            blobDownload = hZip.generate({ type: 'blob' });
-                            saveAs(blobDownload, nomeDownload);
-                        });
-                    }
-
-                    /*
-                    if(idAttach_2) {
-                        self.metaPage.stampaConservatorioCagliari(htmlText, mytextReplaced);
-                    } else {
-                        // dato html rimpiazzo i placeholders
-                        let url = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(mytextReplaced),
-                        fileName = 'stampa.doc',
-                        downloadLink = document.createElement("a");
-                        
-                        downloadLink.style.visibility = 'hidden';
-                        document.body.appendChild(downloadLink);
-
-                        downloadLink.href = url;
-                        downloadLink.download = fileName;
-                        downloadLink.click();
-
-                        downloadLink.parentElement.removeChild(downloadLink);
-
-                    }
-                    */
-                    def.resolve();
+                                    let hZip = new JSZip();
+                                    hZip.file("stampa.doc", mytextReplaced);
+                                    hZip.file("stampa_2.doc", htmlText);
+                                    blobDownload = hZip.generate({ type: 'blob' });
+                                    saveAs(blobDownload, nomeDownload);
+                                });
+                            }
+                            def.resolve();
                 });
-
+            });
             return def.promise();
+
         },
 
         /**

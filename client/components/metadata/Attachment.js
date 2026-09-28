@@ -184,17 +184,25 @@
             var filename = 'default';
             var myInit = { method: callConfigObj.type,
                 headers : {'Authorization':  "Bearer " + token}};
-            fetch(url, myInit).then( function (response) {
+            fetch(url, myInit).then(function (response) {
+                if (response.status === 410) {
+                    return response.text().then(function (msg) {
+                        alert(msg);
+                        return null;
+                    });
+                }
                 filename = self.getFileNameFromContentDisposition(response.headers.get('content-disposition'));
                 return response.blob();
-            }).then(function(myBlob) {
-                var fileURL = window.URL.createObjectURL(myBlob);
-                var a = document.createElement("a");
-                document.body.appendChild(a);
-                a.style = "display: none";
-                a.href = fileURL;
-                a.download = filename;
-                a.click();
+            }).then(function (myBlob) {
+                if (myBlob != null) {
+                    var fileURL = window.URL.createObjectURL(myBlob);
+                    var a = document.createElement("a");
+                    document.body.appendChild(a);
+                    a.style = "display: none";
+                    a.href = fileURL;
+                    a.download = filename;
+                    a.click();
+                }
                 def.resolve();
             });
             return def.promise();

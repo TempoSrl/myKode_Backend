@@ -328,10 +328,11 @@ describe('MetaPage', function () {
                                 return res.resolve(rnew.getRow());
                             };
 
-                            meta.getNewRowCopyChilds = function() {
-                                var res = Deferred("getNewRowCopyChilds");
-                                return res.resolve();
-                            };
+                            // meta.getNewRowCopyChilds = function() {
+                            //     console.log("getNewRowCopyChilds invoked");
+                            //     var res = Deferred("getNewRowCopyChilds");
+                            //     return res.resolve();
+                            // };
 
                             // mock funz getNewRow
                             meta2.getNewRow = function() {

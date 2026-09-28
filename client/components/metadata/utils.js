@@ -319,7 +319,8 @@
             }
             let ua = window.navigator.userAgent;
             let msie = ua.indexOf("MSIE ");
-            return (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) ;
+            if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) return true;
+            return false;
         } catch (e){
             return false;
         }

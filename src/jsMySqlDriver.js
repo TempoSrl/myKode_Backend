@@ -577,7 +577,7 @@ Connection.prototype.getDeleteCommand = function (options) {
         let filterNoError = q.eq("@res",-1);
         filter = filter?filterNoError:q.and(filter,filterNoError);
     }
-    if (options.filter) {
+    if (filter) {
         cmd += ' WHERE ' + formatter.conditionToSql(filter, options.environment);
         if (options.errNum!==undefined){
             cmd+=`;SET @res := IF(@res != -1, @res, if (ROW_COUNT()!=0, -1, ${options.errNum}))`;
@@ -846,11 +846,12 @@ Connection.prototype.tableDescriptor = function (tableName) {
 /**
  * get a sql command given by a sequence of specified sql commands
  * @method appendCommands
- * @param {string[]} cmd
+ * @param {string[]} cmds
  * @returns {string}
  */
-Connection.prototype.appendCommands = function (cmd) {
-    return cmd.join(';\r\n');
+Connection.prototype.appendCommands = function (cmds) {
+    return cmds.join(';\r\n') + ';';
+    // return 'BATCH: BEGIN\n' + cmds.join(';\r\n') + ';\nEND;\n';
 };
 
 /**
@@ -914,7 +915,7 @@ Connection.prototype.footerForBatches = function () {
  * @return string
  */
 Connection.prototype.giveErrorNumberDataWasNotWritten = function (errNumber) {
-    return 'IF ROW_COUNT()=0 THEN\n select ' + formatter.quote(errNumber) + ' as result;\n LEAVE;\n END IF;\n';
+    return 'IF ROW_COUNT()=0 THEN\n select ' + formatter.quote(errNumber) + ' as result;\n LEAVE BATCH;\n END IF;\n';
 };
 
 

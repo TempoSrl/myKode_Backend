@@ -2631,8 +2631,10 @@ describe ("jsBusinessLogic",function () {
                 BL.auditsPromise.then(auditsDS => {
                     BL.execCheckBatch(context.dataAccess, changes, "various sp call", busResult, true)
                         .then(function () {
-                            expect(runSqlCalls.length).toBe(1); //['various sp call;\r\nSELECT @var1 AS var1, @var2 AS var2, @var3 AS var3']
-                            expect(runSqlCalls[0].indexOf("various sp call")).toBe(0);
+                            expect(runSqlCalls.length).toBe(1); //['batch: BEGIN\nvarious sp call;\r\nSELECT @var1 AS var1,
+                            // @var2
+                            // AS var2, @var3 AS var3']
+                            expect(runSqlCalls[0]).toContain("various sp call");
                             expect(runSqlCalls[0].indexOf("SELECT")).toBeGreaterThan(0);
 
                             expect(BL.driver.getBitArray.calls.count()).toBe(3);
@@ -2821,8 +2823,9 @@ describe ("jsBusinessLogic",function () {
                 BL.auditsPromise.then(auditsDS => {
                     BL.execCheckBatch(context.dataAccess, changes, "various sp call", busResult, true)
                         .then(function () {
-                            expect(runSqlCalls.length).toBe(1); //['various sp call;\r\nSELECT @var1 AS var1, @var2 AS var2, @var3 AS var3']
-                            expect(runSqlCalls[0].indexOf("various sp call")).toBe(0);
+                            expect(runSqlCalls.length).toBe(1); //['batch: BEGIN\nvarious sp call;\r\nSELECT @var1 AS
+                            // var1, @var2 AS var2, @var3 AS var3' \n end\n]
+                            expect(runSqlCalls[0]).toContain("various sp call");
                             expect(runSqlCalls[0].indexOf("SELECT")).toBeGreaterThan(0);
 
                             expect(BL.driver.getBitArray.calls.count()).toBe(3);
@@ -2837,7 +2840,8 @@ describe ("jsBusinessLogic",function () {
                             expect(busResult.checks[3].idRule).toBe("audit00");
 
                             BL.destroy().always(()=>{done();});
-                        });
+                        })
+
 
                 });
 

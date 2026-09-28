@@ -96,7 +96,7 @@ describe("jsPostData",function() {
                     return masterConn.run("create database "+dbName);
                 })
                 .then(function () {
-                    done();
+                    done(); //setTimeout(() => done(), 200);
                 })
                 .fail((err)=>{
                     console.log("err"+err);
@@ -131,11 +131,19 @@ describe("jsPostData",function() {
             });
         });
 
-        afterEach(function () {
+        afterEach(function(done) {
             if (sqlConn) {
-                sqlConn.destroy();
+                sqlConn.destroy().done(() => {
+                    sqlConn = null;
+                    done();
+                }).fail((err) => {
+                    console.error('Errore in destroy:', err);
+                    sqlConn = null;
+                    done();
+                });
+            } else {
+                done();
             }
-            sqlConn = null;
         });
 
 

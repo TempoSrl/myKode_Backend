@@ -26,6 +26,7 @@ module.exports = function(config) {
             'client/bower_components/jquery/dist/jquery.js',
             'client/bower_components/jquery-ui/jquery-ui.min.js',
             'node_modules/jasmine-collection-matchers/index.js',
+            'node_modules/jasmine-collection-matchers/index.js',
             'client/bower_components/lodash/lodash.js',
             'client/bower_components/observe-js/src/observe.js',
             'client/bower_components/jasmine-jquery/lib/jasmine-jquery.js',

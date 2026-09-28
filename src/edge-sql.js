@@ -177,7 +177,7 @@ EdgeConnection.prototype.close = function () {
 		driver: this.driver
 	}, function (error) {
 		if (error) {
-			//console.log("error closing handler "+that.edgeHandler+" for "+that.connectionString+":"+error);
+			console.log("error closing handler "+that.edgeHandler+" for "+that.connectionString+":"+error);
 			def.reject(error);
 			return;
 		}

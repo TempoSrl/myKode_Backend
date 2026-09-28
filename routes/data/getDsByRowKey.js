@@ -3,7 +3,7 @@ const express = require("express");
 const asyncHandler = require("express-async-handler");
 const q = require("./../../client/components/metadata/jsDataQuery");
 const GetData = require("../../src/jsGetData");
-const attachUtils = require("./../../client/components/metadata/_attachmentutils");
+const attachUtils = require("../../src/_attachmentutils");
 const getDataUtils = require("./../../client/components/metadata/GetDataUtils");
 const _ = require("lodash");
 

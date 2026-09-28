@@ -283,8 +283,12 @@
                 this.masterFilter = q.constant(false); //svuota la combo
                 if (rowChanged) {
                     this.masterFilter = q.mcmp( this.comboParentRel.childCols,
-                        _.map( self.comboParentRel.parentCols, function (col) {
-                            return rowChanged[col];
+                        _.map(self.comboParentRel.parentCols, function (col) {
+                            if (rowChanged.current)
+                                return rowChanged.current[col];
+                            else
+                                return rowChanged[col];
+
                         }));
                     //this.masterFilter.isTrue = true;
                 }

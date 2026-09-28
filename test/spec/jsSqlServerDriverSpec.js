@@ -146,10 +146,9 @@ describe('sqlServerDriver ', function () {
             done();
             return;
         }
-        console.log("dropping db "+dbName);
+        // console.log("dropping db "+dbName);
         masterConn.run("drop database IF EXISTS "+dbName)
             .then(()=>{
-                console.log("DB "+dbName+" Dropped");
                 masterConn.close()
                     .then(()=>{
                         // console.log("closing connection 0");

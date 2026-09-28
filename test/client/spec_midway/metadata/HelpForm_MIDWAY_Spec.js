@@ -432,7 +432,6 @@ describe("helpForm midway",
                                 helpForm = new HelpForm(state, "t", "#rootelement");
                                 helpForm.lastSelected(t, objrow7);
                                 metapage.helpForm = helpForm;
-
                                 helpForm.preScanControls()
                                 .then(() => {
                                     helpForm.addEvents(metapage);

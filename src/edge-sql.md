@@ -31,10 +31,10 @@ For each table read emits a {meta:[column descriptors]} notification, and for ea
   if raw= true: {row: [array of values read from db]}</p>
 </dd>
 <dt><a href="#queryPackets">queryPackets(query, [raw], [packSize], [timeout])</a> ⇒ <code>*</code></dt>
-<dd><p>Gets data packets row at a time</p>
+<dd><p>Gets data packets one row at a time</p>
 </dd>
 <dt><a href="#run">run(script, [timeout])</a> ⇒ <code>*</code></dt>
-<dd><p>Runs a sql script, eventually composed of multiple blocks separed by GO lines</p>
+<dd><p>Runs a sql script, eventually composed of multiple blocks separated by GO lines</p>
 </dd>
 </dl>
 

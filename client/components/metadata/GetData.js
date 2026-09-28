@@ -1063,7 +1063,42 @@
 				});
 
 			return def.promise();
-		}
+		},
+
+		getMapping: function (tableName, listType) {
+			let def = Deferred('getMapping');
+			let objConn = {
+				method: methodEnum.getMapping,
+				prm: {
+					tableName: tableName,
+					listType: listType,
+				}
+			};
+			appMeta.connection.call(objConn)
+				.then(function (jsonRes) {
+					def.resolve(jsonRes);
+				}, function (err) {
+					def.reject(err);
+				});
+
+            return def.promise();
+		},
+
+		getDefaultRedirections(...tableNames) {
+			let def = Deferred('getDefaultRedirections');
+			let objConn = {
+				method: methodEnum.getDefaultRedirections,
+				prm: tableNames,
+			};
+			appMeta.connection.call(objConn)
+				.then(function (jsonRes) {
+					def.resolve(jsonRes);
+				}, function (err) {
+					def.reject(err);
+				});
+
+			return def.promise();
+		},
 
 	};
 

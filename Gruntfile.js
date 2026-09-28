@@ -12,8 +12,9 @@ const path = require("path");
 const readline = require('readline');
 const chalkModule = import('chalk');
 const platform = os.platform();
+const execSync = require("child_process").execSync;
 
-
+const spawn = require("child_process").spawn;
 
 process.env.CHROME_BIN = require('puppeteer').executablePath();
 
@@ -794,7 +795,10 @@ module.exports = function (grunt) {
         "NodeStart", "karma:server_e2e", "destroySqlDB", "NodeStop"]);
 
     grunt.registerTask("client unit", ["karma:spec"]);
-    grunt.registerTask("client midway", ["createSqlDB","NodeStart","karma:midway","destroySqlDB","NodeStop"]);
+    //grunt.registerTask("client midway", ["createSqlDB","NodeStart","karma:midway","destroySqlDB","NodeStop"]);
+
+    grunt.registerTask("client midway", ["karma:midway"]);
+
     grunt.registerTask("client e2e", ["createSqlDB", "addUserE2e",
         "NodeStart",
         "karma:client_e2e", "karma:client_e2e_app",
@@ -840,6 +844,7 @@ module.exports = function (grunt) {
 
 
     let nodeProcess = 0;
+    let processPID  = 0
     let launched = false;
     let terminated = false;
 
@@ -865,17 +870,18 @@ module.exports = function (grunt) {
                 writeOutput(res,code,buffer);
 
                 if (code===0){
-                    grunt.log.writeln("NodeStart: Node server running (not err), process:",process.pid);
+                    gruntYellow("NodeStart: Node server running (not err), process:",process.pid);
                     //done();
                 }
                 else {
-                    grunt.log.writeln("NodeStart error code, process:",process.pid);
+                    gruntYellow("NodeStart error code, process:",process.pid);
                     process.exit(1);
                 }
 
             }
         );
         //console.log(nodeProcess);
+
         setTimeout(function () {
             if (!nodeProcess.kill(0)) {
             	gruntError("Node server failed to start within the specified time.");
@@ -887,12 +893,51 @@ module.exports = function (grunt) {
             //gruntYellow(`Node server running, current process:${process.pid}, child process: ${nodeProcess.pid}`);
             done();
         }, 10000);
-    });
+
+       function findPIDonPort(port) {
+            try {
+                const output = execSync(`netstat -ano | findstr :${port}`, { encoding: 'utf8' });
+                const lines = output.trim().split('\n');
+                for (const line of lines) {
+                    const parts = line.trim().split(/\s+/);
+                    if (parts[1].endsWith(`:${port}`)) {
+                        return parseInt(parts[4]); // PID
+                    }
+                }
+            } catch (err) {
+                gruntYellow("Warning: failed to get PID from netstat");
+            }
+            return 0;
+       }
+
+        setTimeout(function () {
+            if (!nodeProcess.kill(0)) {
+                gruntError("Node server failed to start within the specified time.");
+                return;
+            }
+            launched = true;
+
+            const actualPID = findPIDonPort(54471);
+            if (actualPID) {
+                saveNodePID(actualPID);
+                processPID = actualPID;
+                gruntYellow(`Node server started on port 54471 with actual PID ${actualPID}`);
+            } else {
+                saveNodePID(nodeProcess.pid);
+                processPID = nodeProcess.pid;
+                gruntYellow(`Node server started (fallback) with PID ${nodeProcess.pid}`);
+            }
+
+            done();
+        }, 10000);
+
+
+});
 
     function getNodePID() {
         var nodePID=0;
-        if (nodeProcess) {
-            return nodeProcess.pid;
+        if (processPID) {
+            return processPID;
         }
         try {
             nodePID = fs.readFileSync(path.join(os.tmpdir(), 'EDGEnodePID'), 'utf8');
@@ -913,7 +958,7 @@ module.exports = function (grunt) {
         let done = this.async();
         let nodePID = getNodePID();
         gruntLog("Killing process "+nodePID);
-        if (!nodePID || !launched) {
+        if (!nodePID ) {
             grunt.log.writeln("Node server not running");
             done();
             return;
@@ -994,7 +1039,32 @@ module.exports = function (grunt) {
     //grunt.registerTask('serverStop', ['shell:stopNode']);
 
 
-    grunt.registerTask("createSqlDB","Create Sql DB",function(){
+    grunt.registerTask("createSqlDB", "Create Sql DB", function () {
+        const done = this.async();
+        enrichEnv(process.env);
+
+        const child = spawn("node", [
+            path.join("test", "runSql"),
+            path.join("config", "dbList.json"),
+            path.join("test", "data", "jsApplication", "setup.sql"),
+            "test_sqlServer"
+        ], {
+            env: process.env,
+            stdio: "inherit", // stampa tutto direttamente in console
+            shell: true
+        });
+
+        child.on("close", (code) => {
+            grunt.log.writeln(`Process exited with code ${code}`);
+            if (code !== 0) {
+                grunt.fail.warn(`createSqlDB failed`);
+            }
+            done();
+        });
+    });
+
+    grunt.registerTask("createSqlDB2","Create Sql DB",function(){
+
         var done = this.async();
         let doneFired = false;
         enrichEnv(process.env);
@@ -1011,11 +1081,19 @@ module.exports = function (grunt) {
                 if (err) {
                     gruntError("createSqlDB error");
                     gruntError(err +":"+ code);
+                    // STAMPA DI DEBUG COMPLETA
+                    grunt.log.writeln("STDOUT:\n" + res);
+                    grunt.log.writeln("STDERR:\n" + buffer.stderr?.toString?.() || '');
+
                     doneFired=true;
                     done();
                     return;
                 }
-                //grunt.log.writeln("createSqlDB ok","err:",err,"res:",res,"code:",code,"buffer:",buffer);
+                grunt.log.writeln("createSqlDB completed with exit code: " + code);
+                grunt.log.writeln("STDOUT:\n" + res);
+                grunt.log.writeln("STDERR:\n" + buffer.stderr?.toString?.() || '');
+
+                grunt.log.writeln("createSqlDB ok","err:",err,"res:",res,"code:",code,"buffer:",buffer);
                 doneFired=true;
                 done();
             }
@@ -1090,12 +1168,12 @@ module.exports = function (grunt) {
             return;
         }
         let doneFired = false;
-        console.log( path.join("node_modules","generator-mykode","demo",scriptName));
+        console.log( path.join("test","data","e2e",scriptName));
         asyncCmd(
             "node",
             ["test/runSql",
                 path.join("config","dbList.json"),
-                path.join("node_modules","generator-mykode","demo",scriptName),
+                path.join("test","data","e2e",scriptName),
                 appInfo.dbCode
             ],
             function (err, res, code, buffer) {
@@ -1148,12 +1226,12 @@ module.exports = function (grunt) {
             return;
         }
         let doneFired = false;
-        console.log( path.join("node_modules","generator-mykode","demo",scriptName));
+        console.log( path.join("test","data","e2e",scriptName));
         asyncCmd(
             "node",
             ["test/runSql",
                 path.join("config","dbList.json"),
-                path.join("node_modules","generator-mykode","demo",scriptName),
+                path.join("test","data","e2e",scriptName),
                 appInfo.dbCode
             ],
             function (err, res, code, buffer) {
@@ -1401,6 +1479,5 @@ module.exports = function (grunt) {
         }
         askQuestion(0);
     });
-
 
 };

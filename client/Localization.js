@@ -6,10 +6,6 @@
  */
 (function () {
 
-    function dict(){
-        return appMeta.localResource.dictionary;
-    }
-
     /**
      * @constructor localization
      * @description
