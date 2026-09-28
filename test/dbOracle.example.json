@@ -1,10 +1,7 @@
-{ 
+{
     "server": "localhost",
     "dbName": "MYPDB",
     "user": "user1",
-    "pwd": "new_password",
+    "pwd": "CHANGE_ME",
     "port": 1521
 }
-
-
-

@@ -2,7 +2,7 @@
     "server": "localhost",
     "database": "test2",
     "user": "sa",
-    "pwd": "afrodite",
+    "pwd": "CHANGE_ME",
     "sqlModule": "jsSqlServerDriver",
     "schema": "DBO",
     "defaultSchema": "DBO"

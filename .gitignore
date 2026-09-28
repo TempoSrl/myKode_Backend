@@ -7,3 +7,9 @@ datasets
 uploads
 client/bower_components
 *.bak
+# configurazione locale dei test SQL Server (ha la password): il modello e' test/dbSqlServer.example.json
+test/dbSqlServer.json
+# configurazioni locali dei test MySQL e Oracle (hanno la password): i modelli sono i *.example.json
+test/dbMySql.json
+test/data/DbList/dbMySql.json
+test/dbOracle.json

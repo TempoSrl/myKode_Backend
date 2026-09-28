@@ -1,0 +1,6 @@
+{
+    "server": "localhost",
+    "dbName": "test",
+    "user": "user1",
+    "pwd": "CHANGE_ME"
+}

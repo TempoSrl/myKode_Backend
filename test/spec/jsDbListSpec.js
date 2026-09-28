@@ -42,6 +42,9 @@ if (process.env.TRAVIS){
     };
 }
 else {
+    if (!fs.existsSync(configName)) {
+        throw new Error(configName + " non esiste: copia test/dbMySql.example.json e metti la password del tuo MySQL di test");
+    }
     dbConfig = JSON.parse(fs.readFileSync(configName).toString());
 }
 /**

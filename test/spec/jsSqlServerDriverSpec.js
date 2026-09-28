@@ -31,10 +31,13 @@ if (process.env.TRAVIS){
     dbConfig = { "server": "127.0.0.1",
         "database": "test",
         "user": "sa",
-        "pwd": "YourStrong!Passw0rd"
+        "pwd": process.env.MSSQL_SA_PASSWORD
     };
 }
 else {
+    if (!fs.existsSync(configName)) {
+        throw new Error(configName + " non esiste: copia test/dbSqlServer.example.json e metti la password del tuo SQL Server di test");
+    }
     dbConfig = JSON.parse(fs.readFileSync(configName).toString());
 }
 

@@ -2,6 +2,6 @@
     "server": "localhost",
     "database": "test",
     "user": "user1",
-    "pwd": "user1user1",
+    "pwd": "CHANGE_ME",
     "sqlModule": "jsMySqlDriver"
 }
