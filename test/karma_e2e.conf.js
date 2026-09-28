@@ -37,6 +37,7 @@ module.exports = function(config) {
             'test/client/common/metadata/TestApp.js',
             'client/components/metadata/Enum.js',
             'client/components/metadata/Config.js',
+            { pattern: 'client/components/metadata/ConfigDev.local.js', included: true, watched: false },
             'client/components/metadata/ConfigDev.js',
             'client/components/metadata/Logger.js',
             'client/components/metadata/EventManager.js',

@@ -13,3 +13,5 @@ test/dbSqlServer.json
 test/dbMySql.json
 test/data/DbList/dbMySql.json
 test/dbOracle.json
+# password degli utenti di test (modello: ConfigDev.local.example.js)
+client/components/metadata/ConfigDev.local.js
