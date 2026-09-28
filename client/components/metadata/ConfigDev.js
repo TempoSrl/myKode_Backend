@@ -7,8 +7,6 @@
 
     var configDev = {
 
-        //userName: "vis_psuma",
-        //password: "vis_psuma",
         userName: "user1",
 		password: "user1user1",
         email : 'info@tempo.it',
