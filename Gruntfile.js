@@ -882,18 +882,6 @@ module.exports = function (grunt) {
         );
         //console.log(nodeProcess);
 
-        setTimeout(function () {
-            if (!nodeProcess.kill(0)) {
-            	gruntError("Node server failed to start within the specified time.");
-            	return;
-            }
-            launched=true;
-            saveNodePID(nodeProcess.pid);
-            gruntYellow(`Node server started`);
-            //gruntYellow(`Node server running, current process:${process.pid}, child process: ${nodeProcess.pid}`);
-            done();
-        }, 10000);
-
        function findPIDonPort(port) {
             try {
                 const output = execSync(`netstat -ano | findstr :${port}`, { encoding: 'utf8' });
